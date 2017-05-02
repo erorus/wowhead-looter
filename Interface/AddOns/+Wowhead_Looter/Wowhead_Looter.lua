@@ -126,7 +126,7 @@ local WL_REP_MODS = {
 };
 -- Map currency name to currency ID
 local WL_CURRENCIES = {};
-local WL_CURRENCIES_MAXID = 1226;
+local WL_CURRENCIES_MAXID = 1400;
 -- Random Dungeon IDs extracted from LFGDungeons.dbc
 local WL_AREAID_TO_DUNGEONID = {
     [1] = {
@@ -334,6 +334,7 @@ local WL_SPECIAL_CONTAINERS = {
     [126901] = true, [126906] = true, [126909] = true, [126914] = true, [126917] = true, [126918] = true, [126919] = true, [126920] = true, [126921] = true, [126922] = true, [126923] = true, [126924] = true, [126902] = true, [126907] = true, [126910] = true, [126915] = true, [127831] = true, [126903] = true, [126904] = true, [126905] = true, [126908] = true, [126911] = true, [126912] = true, [126913] = true, [126916] = true, [128213] = true, [128214] = true, [128215] = true, [128216] = true, -- Ashran and CM boxes
     [127751] = true, -- fel-touched-pet-supplies
     [128327] = true, -- small-pouch-of-coins
+    [147384] = true,
 };
 
 -- garrison trading post NPCs, for today in draenor tracking
@@ -2208,7 +2209,7 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specID, sex, isPersonal, lootSource)
-    if not typeIdentifier or (typeIdentifier ~= "item" and typeIdentifier ~= "money") then
+    if not typeIdentifier or (typeIdentifier ~= "item" and typeIdentifier ~= "money" and typeIdentifier ~= "currency") then
         return;
     end
     
@@ -2242,11 +2243,18 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
             typeId = wlParseItemLink(itemLink);
         elseif typeIdentifier == "money" then
             typeId = "coin";
+        elseif typeIdentifier == "currency" then
+            typeId = wlParseCurrencyLink(itemLink);
+            currencyId = wlParseCurrencyLink(itemLink);
         end
         
         wlEvent[wlId][wlN][eventId]["drop"] = wlEvent[wlId][wlN][eventId]["drop"] or {};    
-        wlEvent[wlId][wlN][eventId].fromLootToast = 1;        
-        wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity));
+        wlEvent[wlId][wlN][eventId].fromLootToast = 1;    
+        if typeId == "currency" then
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity, currencyId));
+        else
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity));
+        end
         
     end
 end
@@ -4455,6 +4463,19 @@ end
 --                      --
 --------------------------
 --------------------------
+
+-- |cffffffff|Hcurrency:1226|h[Nethershard]|h|r
+-- |cffffff00|Hquest:10002:64|h[The Firewing Liaison]|h|r
+-- |cffffff00|Hquest:11506:-1|h[Spirits of Auchindoun]|h|r
+-- (color) : (id) : (name)
+local WL_CURRENCYLINK = "|c(%x+)|Hcurrency:(%d+)|h%[(.+)%]|h|r";
+function wlParseCurrencyLink(link)
+    if link then
+       for color, id, name in link:gmatch(WL_CURRENCYLINK) do
+            return tonumber(id);
+        end
+    end
+end
 
 --    (color) : (id) : (enchant) : (1st socket) : (2nd socket) : (3rd socket) : (4th socket) : (subid) : (guid) : (playerLevel) : (specId) : (upgradeType) : (bonusContext) : (numBonus) (: ...bonusIds...) : (upgradeId) : (name)
 local WL_ITEMLINK = "|c(%x+)|Hitem:(%d+):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*):(%-?%d*)([^|]*)|h%[(.+)%]|h|r";
