@@ -2244,8 +2244,8 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         elseif typeIdentifier == "money" then
             typeId = "coin";
         elseif typeIdentifier == "currency" then
-            typeId = wlParseCurrencyLink(itemLink);
-            currencyId = wlParseCurrencyLink(itemLink);
+            typeId = "currency";
+            local currencyId = wlParseCurrencyLink(itemLink);
         end
         
         wlEvent[wlId][wlN][eventId]["drop"] = wlEvent[wlId][wlN][eventId]["drop"] or {};    
