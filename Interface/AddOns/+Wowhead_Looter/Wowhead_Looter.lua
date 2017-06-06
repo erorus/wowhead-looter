@@ -335,6 +335,7 @@ local WL_SPECIAL_CONTAINERS = {
     [127751] = true, -- fel-touched-pet-supplies
     [128327] = true, -- small-pouch-of-coins
     [147384] = true,
+    [147446] = true, -- Brawler's footlocker
 };
 
 -- garrison trading post NPCs, for today in draenor tracking
