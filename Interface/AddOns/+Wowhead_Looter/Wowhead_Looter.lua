@@ -11,7 +11,7 @@
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 70204;
+local WL_VERSION = 70205;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -1082,7 +1082,7 @@ function wlEvent_MERCHANT_UPDATE(self)
     end
 
     for slot=1, GetMerchantNumItems() do
-        local name, icon, price, stack, numAvailable, _, extendedCost = GetMerchantItemInfo(slot);
+        local name, icon, price, stack, numAvailable, _, _, extendedCost = GetMerchantItemInfo(slot);
         local id, subId = wlParseItemLink(GetMerchantItemLink(slot));
         if (id ~= 0 or ((currencyInfos[name] ~= nil) and (currencyInfos[name][2] == icon))) then
             
@@ -1162,12 +1162,12 @@ function wlEvent_MERCHANT_UPDATE(self)
                         wlGameTooltip:ClearLines();
                         wlGameTooltip:SetMerchantCostItem(slot, i);
 
-                        if not texture or not wlGameTooltipTextLeft1:GetText() or wlGameTooltipTextLeft1:GetText() == "" then
+                        if not texture or type(texture) ~= "number" or not wlGameTooltipTextLeft1:GetText() or wlGameTooltipTextLeft1:GetText() == "" then
                             return; -- error
                         end
 
                         -- Create a unique ID using the icon name and the currency localized name
-                        currencyId = texture:match("[^\\]+$"):lower().."<>"..wlGameTooltipTextLeft1:GetText();
+                        currencyId = texture.."<>"..wlGameTooltipTextLeft1:GetText();
                     end
 
                     tinsert(merchantCurrencies, { qty, currencyId });

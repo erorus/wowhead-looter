@@ -1,10 +1,10 @@
-## Interface: 70200
+## Interface: 70205
 ## Title: Wowhead Looter
 ## Notes: Gathers data for Wowhead while you play.
 ## Author: mystadio
 ## eMail: feedback@wowhead.com
 ## URL: http://www.wowhead.com
-## Version: 70204
+## Version: 70205
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## SavedVariables: wlTime, wlRegionBuildings, wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList, wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlBaseStats, wlItemDurability, wlBattlePetStats, wlItemBonuses, wlDailies, wlWorldQuests
