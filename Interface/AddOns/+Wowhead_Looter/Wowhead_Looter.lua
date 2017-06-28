@@ -11,7 +11,7 @@
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 70205;
+local WL_VERSION = 70204;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -335,7 +335,7 @@ local WL_SPECIAL_CONTAINERS = {
     [127751] = true, -- fel-touched-pet-supplies
     [128327] = true, -- small-pouch-of-coins
     [147384] = true,
-    [147446] = true, -- Brawler's footlocker
+    [147446] = true, -- brawler's footlocker
 };
 
 -- garrison trading post NPCs, for today in draenor tracking
