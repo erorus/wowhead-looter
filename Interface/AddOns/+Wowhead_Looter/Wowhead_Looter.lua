@@ -19,7 +19,7 @@ local WL_ADDONNAME, WL_ADDONTABLE = ...
 -- SavedVariables
 wlTime = time();
 wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = 0, 0, "", "", {};
-wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {};
+wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
 wlDailies, wlWorldQuests= "", "";
 wlRegionBuildings = {};
 
@@ -2006,7 +2006,36 @@ function wlSeenWorldQuests()
     end
 end
 
+----------------------------
+----------------------------
+--                        --
+--   GARRISON FUNCTIONS   --
+--                        --
+----------------------------
+----------------------------
 
+function wlEvent_GARRISON_MISSION_LIST_UPDATE(self, garrisonFollowerTypeId)
+    local missions = C_Garrison.GetAvailableMissions(garrisonFollowerTypeId)
+    if missions then
+        for i = 1, #missions do
+            local m = missions[i]
+            local rewards = {};
+            for j = 1, #m.rewards do
+                local r = m.rewards[j]
+                if r.itemID then
+                    table.insert(rewards, wlConcat("I", r.itemID, r.quantity))
+                elseif r.followerXP then
+                    -- from DB2 - table.insert(rewards, wlConcat("X", r.followerXP))
+                elseif r.currencyID then
+                    table.insert(rewards, wlConcat("C", r.currencyID, r.quantity))
+                end
+            end
+            if #rewards > 0 then
+                wlGarrisonMissions[m.missionID] = table.concat(rewards, ",")
+            end
+        end
+    end
+end
 
 -------------------------
 -------------------------
@@ -3434,7 +3463,7 @@ function wlScanFollowers()
     local followerTable = {}
     local followerTableIdx = #followerTable
 
-    local followerTypes = {1, LE_FOLLOWER_TYPE_SHIPYARD_6_2, LE_FOLLOWER_TYPE_GARRISON_7_0 };
+    local followerTypes = { LE_FOLLOWER_TYPE_GARRISON_6_0, LE_FOLLOWER_TYPE_SHIPYARD_6_2, LE_FOLLOWER_TYPE_GARRISON_7_0 };
 
     for ftIdx=1,#followerTypes do
         local ft = followerTypes[ftIdx];
@@ -3734,6 +3763,9 @@ local wlEvents = {
     QUEST_LOG_UPDATE = wlEvent_QUEST_LOG_UPDATE,
     UNIT_QUEST_LOG_CHANGED = wlEvent_UNIT_QUEST_LOG_CHANGED,
     COMBAT_TEXT_UPDATE = wlEvent_COMBAT_TEXT_UPDATE,
+
+    -- garrison
+    GARRISON_MISSION_LIST_UPDATE = wlEvent_GARRISON_MISSION_LIST_UPDATE,
 
     -- coords tooltip
     PLAYER_ENTERING_WORLD = wlEvent_ZONE_CHANGED,
@@ -5135,7 +5167,7 @@ end
 
 function wlReset()
     wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = WL_VERSION, 0, "", "", {};
-    wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {};
+    wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
