@@ -11,7 +11,7 @@
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 70204;
+local WL_VERSION = 70300;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -74,6 +74,7 @@ local WL_LOOT_TOAST_BAGS = {
     [178508] = 120321,  -- Mystery Bag
     [181405] = 122535,  -- Traveler's Pet Supplies
     [243134] = 147384,  -- Legionfall Recompense
+    -- broken shore token gear
     [240421] = 147223,  -- dauntless trinket
     [240414] = 147216,  -- dauntless hood
     [240146] = 147218,  -- dauntless shoulder
@@ -106,6 +107,69 @@ local WL_LOOT_TOAST_BAGS = {
     [243132] = 146900,  -- nightfallen cache
     [243133] = 146902,  -- warden supply kit
     [243135] = 147361,  -- legionfall chest
+    
+    -- argus tokens
+    [254781] = 153214,  -- relinquished ring
+    [254774] = 153209,  -- relinquished cloak
+    [254780] = 153207,  -- relinquished boots
+    [254776] = 153206,  -- relinquished bracers
+    [254778] = 153205,  -- relinquished girdle
+    [254782] = 153216,  -- relinquished trinket
+    [254790] = 153064,  -- relinquished relic holy
+    [254773] = 153215,  -- relinquished shoulders
+    [254784] = 153213,  -- relinquished neck
+    [254779] = 153212,  -- relinquished pants
+    [254783] = 153211,  -- relinquished hood
+    [254777] = 153210,  -- relinquished gauntlets
+    [254785] = 153059,  -- relinquished relic arcane
+    [254775] = 153208,  -- relinquished chestguard
+    [254786] = 153060,  -- relinquished relic blood
+    [254787] = 153061,  -- relinquished relic fel
+    [254788] = 153062,  -- relinquished relic fire
+    [254794] = 153068,  -- relinquished relic storm
+    [254793] = 153067,  -- relinquished relic shadow
+    [254792] = 153066,  -- relinquished relic life
+    [254791] = 153065,  -- relinquished relic iron
+    [254789] = 153063,  -- relinquished relic holy
+    [254632] = 153140,  -- unsullied plate belt
+    [252882] = 152733,  -- unsullied trinket
+    [252883] = 152735,  -- unsullied ring
+    [252894] = 152736,  -- unsullied necklace
+    [254628] = 152737,  -- unsullied leather pants
+    [252895] = 152738,  -- unsullied cloth hat
+    [254634] = 152739,  -- unsullied leather gloves
+    [252892] = 152740,  -- unsullied cloak
+    [254641] = 152741,  -- unsullied mail cloak
+    [252890] = 152742,  -- unsullied cloth cuffs
+    [254626] = 152743,  -- unsullied plate sabatons
+    [254631] = 152744,  -- unsullied mail girdle
+    [254634] = 152739,  -- unsullied leather gloves
+    [253033] = 152799,  -- unsullied relic
+    [252891] = 153135,  -- unsullied cloth robes
+    [254624] = 153136,  -- unsullied leather treads
+    [254637] = 153137,  -- unsullied mail spaulders
+    [254630] = 153138,  -- unsullied mail legguards
+    [254646] = 153139,  -- unsullied leather headgear
+    [252893] = 152734,  -- unsullied cloth mantle
+    [252889] = 153141,  -- unsullied cloth mitts
+    [254617] = 153142,  -- unsullied leather armbands
+    [254642] = 153143,  -- unsullied plate breastplate
+    [252884] = 153144,  -- unsullied cloth slippers
+    [254638] = 153145,  -- unsullied leather spaulders
+    [254629] = 153146,  -- unsullied plate greaves
+    [254648] = 153147,  -- unsullied mail coif
+    [254633] = 153148,  -- unsullied leather belt
+    [254635] = 153149,  -- unsullied mail gloves
+    [254622] = 153150,  -- unsullied plate vambraces
+    [254645] = 153151,  -- unsullied leather tunic
+    [254625] = 153152,  -- unsullied mail boots
+    [254639] = 153153,  -- unsullied plate pauldrons
+    [252886] = 153154,  -- unsullied cloth leggings
+    [254649] = 153155,  -- unsullied plate helmet
+    [252887] = 153156,  -- unsullied cloth sash
+    [254636] = 153157,  -- unsullied plate gauntlets
+    [254623] = 153158,  -- unsullied mail bracers
+    
 };
 
 local WL_REP_MODS = {
@@ -405,6 +469,10 @@ local WL_WORLD_QUESTS = {
     46822,46001,46209,46750,46761,45358,45178,45837,45531,46829,45744,46077,45541,46817,45743,45776,45653,46308,46046,46754,46756,46755,46833,46752,45929,46076,45550,45549,45626,46360,46762,45805,46032,45379,45973,45930,45977,46112,46113,46111,47061,46947,46948,46945,46109,46325,45473,46932,45988,45520,45559,45542,46073,46068,46201,46821,45970,45878,47132,46126,46933,45934,46198,45985,46066,45472,46707,46825,44751,45797,46180,46075,46175,46236,45035,46942,46160,46063,46866,45791,44748,
     
     45924,45922,45439,46006,45838,45840,45839,45812,46191,46008,45203,46010,46193,46196,46011,46168,46183,46216,46179,44884,46169,46763,45786,46012,46161,46013,46197,46166,46184,45928,46014,45923,46015,45804,46185,46186,46165,46167,46187,46164,45925,46116,46188,44730,45058,46262,46017,46189,45390,46162,46195,45921,46170,46163,46146,46265,45134,46261,44759,46264,46021,46190,46766,46263,46194,45927,45926,46192,
+    
+    48832, 48285, 48837, 48729, 48701, 48931, 47705, 47724, 47561, 48101, 47496, 47456, 48727, 48867, 48637, 48511, 48509, 48831, 48510, 48739, 48096, 49051, 48286, 48095, 49045, 48777, 47720, 46288, 48722, 47135, 49042, 46072, 47566, 48098, 48097, 48780, 49049, 48287, 48731, 48175, 48592, 48099, 48835, 48282, 48830, 48737, 48733, 48386, 47507, 47551, 48828, 49052, 47707, 47828, 48983, 49057, 47552, 48875, 48502, 48106, 48783, 49058, 48105, 48467, 48284, 47844, 49044, 48833, 48958, 47646, 49041, 48732, 48102, 48526, 47858, 49050, 47833, 48662, 47542, 48512, 48740, 48936, 48514, 48691, 48694, 47563, 48976, 48977, 48338, 48358, 48360, 48374, 47728, 48192, 47953, 48100, 47712, 48640, 47625, 48952, 48091, 48827, 48466, 48724, 48094, 48866, 48465, 48615, 49053, 48836, 48624, 48614, 48337, 48359, 48363, 48364, 48318, 48373, 48323, 48834, 48696, 48829, 46279,
+    
+    48639,48641,48642,
 };
 
 -- Speed optimizations
