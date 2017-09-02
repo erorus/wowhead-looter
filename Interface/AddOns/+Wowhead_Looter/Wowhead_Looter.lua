@@ -190,7 +190,7 @@ local WL_REP_MODS = {
 };
 -- Map currency name to currency ID
 local WL_CURRENCIES = {};
-local WL_CURRENCIES_MAXID = 1400;
+local WL_CURRENCIES_MAXID = 2400;
 -- Random Dungeon IDs extracted from LFGDungeons.dbc
 local WL_AREAID_TO_DUNGEONID = {
     [1] = {
