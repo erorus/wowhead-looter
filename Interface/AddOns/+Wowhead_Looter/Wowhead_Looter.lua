@@ -170,6 +170,13 @@ local WL_LOOT_TOAST_BAGS = {
     [254636] = 153157,  -- unsullied plate gauntlets
     [254623] = 153158,  -- unsullied mail bracers
     
+    -- 7.3 em boxes
+    [254386] = 152652,  -- gilded trunk
+    [253748] = 152923,  -- gleaming footlocker
+    [253747] = 152922,  -- brittle krokul chest
+    [254385] = 152650,  -- scuffed krokul cache
+    
+    
 };
 
 local WL_REP_MODS = {
