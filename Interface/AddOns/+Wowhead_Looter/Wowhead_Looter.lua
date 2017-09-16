@@ -20,7 +20,7 @@ local WL_ADDONNAME, WL_ADDONTABLE = ...
 wlTime = time();
 wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = 0, 0, "", "", {};
 wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
-wlDailies, wlWorldQuests= "", "";
+wlDailies, wlWorldQuests, wlLesserInvasions, wlGreaterInvasions = "", "", {}, "";
 wlRegionBuildings = {};
 
 -- SavedVariablesPerCharacter
@@ -195,6 +195,29 @@ local WL_REP_MODS = {
     [GetSpellInfo(136583)] = {nil, 0.1},
     [GetSpellInfo(46668)] = {nil, 0.1},
 };
+local WL_LESSER_INVASIONS = {
+    [5350] = "sangua",   -- invasion point: sangua
+    [5369] = "sangua",   -- invasion point: sangua
+    [5359] = "cen'gar",   -- invasion point: cen'gar
+    [5370] = "cen'gar",   -- invasion point: cen'gar
+    [5360] = "val",   -- invasion point: val
+    [5372] = "val",   -- invasion point: val
+    [5366] = "bonich",   -- invasion point: bonich
+    [5371] = "bonich",   -- invasion point: bonich
+    [5373] = "arinor",   -- invasion point: aurinor
+    [5367] = "aurinor",   -- invasion point: aurinor
+    [5368] = "aurinor",   -- invasion point: naigtal
+    [5374] = "naigtal",   -- invasion point: naigtal
+}
+
+local WL_GREATER_INVASIONS = {
+    [5375] = "124625",	-- Mistress Alluradel
+	[5376] = "124492",	-- Occularus
+	[5377] = "124719",	-- Pit Lord Vilemus
+	[5379] = "124592",	-- Inquisitor Meto
+	[5380] = "124555",	-- Sotanathor
+	[5381] = "124514",	-- Matron Folnuna
+}
 -- Map currency name to currency ID
 local WL_CURRENCIES = {};
 local WL_CURRENCIES_MAXID = 2400;
@@ -600,7 +623,6 @@ local wlDefaultGetQuestReward;
 local wlDefaultChatFrame_DisplayTimePlayed;
 local wlDefaultReloadUI;
 local wlDefaultConsoleExec;
-
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -2081,6 +2103,56 @@ function wlSeenWorldQuests()
     end
 end
 
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+function wlSeenInvasions()
+	if not C_WorldMap.GetAreaPOITimeLeft then return end
+	
+    local now = GetServerTime()
+
+    local resultsLess = {}
+	local resultsGreat = {};
+    local resultCount = 0
+    local lines = {}
+
+	-- handle lesser invasions
+	-- starts at index 5349
+    --for i = 5349, #WL_LESSER_INVASIONS, 1 do
+	for i,v in pairs(WL_LESSER_INVASIONS) do
+		wlPrint(WL_LESSER_INVASIONS[i])
+        local invasionL = WL_LESSER_INVASIONS[i];
+        local timeLeft = C_WorldMap.GetAreaPOITimeLeft(i);
+        if (timeLeft and timeLeft > 0) then
+            wlLesserInvasions[i] = {}
+			wlLesserInvasions[i].areaPoiId = i;
+            --wlLesserInvasions[i].name = invasionL;
+            wlLesserInvasions[i].endTime = now + timeLeft * 60;
+
+            resultCount = resultCount + 1;
+        end
+    end
+	resultCount = 0;
+	
+	
+	-- handle greater invasions
+	-- these IDs start at 5375, so let's save time by cutting to the chase
+    for i,v in pairs(WL_GREATER_INVASIONS) do
+        local invasionG = WL_GREATER_INVASIONS[i];
+        local timeLeft = C_WorldMap.GetAreaPOITimeLeft(i);
+        if (timeLeft and timeLeft > 0) then
+            wipe(lines);
+            lines[1] = invasionG;
+
+            resultCount = resultCount + 1;
+            resultsGreat[resultCount] = table.concat(lines, 'x');
+        end
+    end
+
+    if resultCount > 0 then
+
+        wlGreaterInvasions = table.concat(resultsGreat,',');
+    end
+end
+
 ----------------------------
 ----------------------------
 --                        --
@@ -2858,6 +2930,7 @@ function wlCollect(userInitiated)
 
     wlQueryTimePlayed();
     
+    wlSeenInvasions()
     wlScanAppearances()
     wlScanToys()
     wlScanMounts()
@@ -2867,7 +2940,7 @@ function wlCollect(userInitiated)
     wlScanArchaeology()
     wlSeenWorldQuests()
     wlGetBuildings();
-    --wlGetTime();
+    wlGetTime();
 
     if userInitiated then
         wlTimers.printCollected = wlGetTime() + 1000;
@@ -4285,7 +4358,6 @@ local uploadReminder = false;
 local wlTimeSinceLastUpdate = 0;
 local WL_ONUPDATE_THROTTLE = 0.2;
 function wl_OnUpdate(self, elapsed)
-
     wlTimeSinceLastUpdate = wlTimeSinceLastUpdate + elapsed;     
 
     if wlTimeSinceLastUpdate >= WL_ONUPDATE_THROTTLE then
