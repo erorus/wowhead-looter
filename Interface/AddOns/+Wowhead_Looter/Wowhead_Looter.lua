@@ -57,6 +57,14 @@ local WL_SPELL_BLACKLIST = {
     [135299] = true, -- Ice Trap
     [135373] = true, -- Entrapment
 };
+local WL_LOOT_TOAST_BOSS = {
+	[244164] = 121818,	-- kazzak
+	[244165] = 121820,	-- azuregos
+	[244166] = 121911,	-- taerar
+	[244182] = 121913,	-- emeriss
+	[244184] = 121821,	-- lethon
+	[244183] = 121912,	-- ysondre
+};
 local WL_LOOT_TOAST_BAGS = {
     [142397] = 98134,     -- Heroic Cache of Treasures
     [143506] = 98095,     -- Brawler's Pet Supplies
@@ -2324,6 +2332,21 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, spell, rank, target, lineID)
     end
 end
 
+-- This fires off for bonus rolls, and some boss loots that prompt a loot toast, in special events.
+-- We only care about the spellId, thus the others are 'Throw away' variables because we don't
+-- know what to do with them right now.
+function wlEvent_SPELL_CONFIRMATION_PROMPT(self, spellId, a, b, c, d, e)
+    if WL_LOOT_TOAST_BOSS[spellId] then
+        local now = wlGetTime();
+        wlClearTracker("spell");
+        wlTrackerClearedTime = now;
+        wlLootToastSourceId = spellId;
+        wlCurrentLootToastEventId = nil;
+        wlTimers.clearLootToastSource = now + 250;
+        return;
+    end
+end
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spell, rank, lineID, spellId)
@@ -2338,6 +2361,16 @@ function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spell, rank, lineID, spell
         wlClearTracker("spell");
         wlTrackerClearedTime = now;
         wlLootToastSourceId = WL_LOOT_TOAST_BAGS[spellId];
+        wlCurrentLootToastEventId = nil;
+        wlTimers.clearLootToastSource = now + 250;
+        return;
+    elseif WL_LOOT_TOAST_BOSS[spellId] then
+        -- This should not be hit; however, this is "better safe than sorry" and does
+        -- sometimes get hit by the OPENING spell
+        local now = wlGetTime();
+        wlClearTracker("spell");
+        wlTrackerClearedTime = now;
+        wlLootToastSourceId = spellId;
         wlCurrentLootToastEventId = nil;
         wlTimers.clearLootToastSource = now + 250;
         return;
@@ -2391,7 +2424,6 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
     end
     
     if wlLootToastSourceId then
-    
         if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
             return;
         end
@@ -2406,14 +2438,26 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         end
         local eventId = wlCurrentLootToastEventId;    
     
-        wlTracker.spell.action = "Opening";
-        wlTracker.spell.kind = "item";
-        wlTracker.spell.id = wlLootToastSourceId;
-        wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
-        wlEvent[wlId][wlN][eventId].what = "loot";
-        wlTableCopy(wlEvent[wlId][wlN][eventId], wlTracker.spell);
-        wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
-        wlEvent[wlId][wlN][eventId].flags = 0;
+        if WL_LOOT_TOAST_BOSS[wlLootToastSourceId] then
+            wlTracker.spell.action = "Killing";
+            wlTracker.spell.kind = "npc";
+            wlTracker.spell.id = WL_LOOT_TOAST_BOSS[wlLootToastSourceId];
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
+            wlEvent[wlId][wlN][eventId].what = "loot";
+            wlTableCopy(wlEvent[wlId][wlN][eventId], wlTracker.spell);
+            wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
+            wlEvent[wlId][wlN][eventId].flags = 0;
+        else
+            wlTracker.spell.action = "Opening";
+            wlTracker.spell.kind = "item";
+            wlTracker.spell.id = wlLootToastSourceId;
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
+            wlEvent[wlId][wlN][eventId].what = "loot";
+            wlTableCopy(wlEvent[wlId][wlN][eventId], wlTracker.spell);
+            wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
+            wlEvent[wlId][wlN][eventId].flags = 0;
+        end
+        
         
         local typeId = nil;
         local currencyId = nil;
@@ -3874,6 +3918,7 @@ local wlEvents = {
     LOOT_OPENED = wlEvent_LOOT_OPENED,
     LOOT_CLOSED = wlEvent_LOOT_CLOSED,
     SHOW_LOOT_TOAST = wlEvent_SHOW_LOOT_TOAST,
+    SPELL_CONFIRMATION_PROMPT = wlEvent_SPELL_CONFIRMATION_PROMPT,
     CHAT_MSG_ADDON = wlEvent_CHAT_MSG_ADDON,
     CHAT_MSG_LOOT = wlEvent_CHAT_MSG_LOOT,
     UNIT_SPELLCAST_SENT = wlEvent_UNIT_SPELLCAST_SENT,
