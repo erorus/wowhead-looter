@@ -3577,30 +3577,38 @@ function wlScanHeirlooms()
 end
 
 local wlScanAppearances_processing = false
-local function wlGetCollectedTransmogAppearances(category)
-    -- save user preferences
-    local collectedChecked = C_TransmogCollection.GetCollectedShown()
-    local uncollectedChecked = C_TransmogCollection.GetUncollectedShown()
+local function wlGetCollectedTransmogAppearances(category, enableFilter)
+    local app = nil;
 
-    local sourcesChecked = {}
-    local numSources = C_TransmogCollection.GetNumTransmogSources();
-    for i = 1, numSources do
-        sourcesChecked[i] = not C_TransmogCollection.IsSourceTypeFilterChecked(i)
-    end
+    -- enable filter if wardrobe frame is invisible.
+    if enableFilter then
+        -- save user preferences
+        local collectedChecked = C_TransmogCollection.GetCollectedShown()
+        local uncollectedChecked = C_TransmogCollection.GetUncollectedShown()
 
-    -- change preferences to find all collected appearances
-    C_TransmogCollection.SetCollectedShown(true)
-    C_TransmogCollection.SetUncollectedShown(false)
-    C_TransmogCollection.SetAllSourceTypeFilters(true)
+        local sourcesChecked = {}
+        local numSources = C_TransmogCollection.GetNumTransmogSources();
+        for i = 1, numSources do
+            sourcesChecked[i] = not C_TransmogCollection.IsSourceTypeFilterChecked(i)
+        end
 
-    -- fetch appearances
-    local app = C_TransmogCollection.GetCategoryAppearances(category)
+        -- change preferences to find all collected appearances
+        C_TransmogCollection.SetCollectedShown(true)
+        C_TransmogCollection.SetUncollectedShown(false)
+        C_TransmogCollection.SetAllSourceTypeFilters(true)
 
-    -- reset back to user preferences
-    C_TransmogCollection.SetCollectedShown(collectedChecked)
-    C_TransmogCollection.SetUncollectedShown(uncollectedChecked)
-    for k, v in pairs(sourcesChecked) do
-        C_TransmogCollection.SetSourceTypeFilter(k, v)
+        -- fetch appearances
+        app = C_TransmogCollection.GetCategoryAppearances(category)
+
+        -- reset back to user preferences
+        C_TransmogCollection.SetCollectedShown(collectedChecked)
+        C_TransmogCollection.SetUncollectedShown(uncollectedChecked)
+        for k, v in pairs(sourcesChecked) do
+            C_TransmogCollection.SetSourceTypeFilter(k, v)
+        end
+    else
+        -- fetch appearances
+        app = C_TransmogCollection.GetCategoryAppearances(category)
     end
 
     return app
@@ -3620,8 +3628,11 @@ function wlScanAppearances()
 
     local appearanceTable = {}
 
+    -- enable filter if wardrobe frame is invisible.
+    local enableFilter = not WardrobeCollectionFrame or not WardrobeCollectionFrame:IsVisible();
+
     for colType = 1, NUM_LE_TRANSMOG_COLLECTION_TYPES do
-        local app = wlGetCollectedTransmogAppearances(colType)
+        local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
 
         for k, o in pairs(app) do
             if o.isCollected and not o.isHideVisual then
