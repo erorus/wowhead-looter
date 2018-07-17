@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 7.2.0                     --
---    Updated: Feb 7, 2017             --
+--    Patch: 8.0.1                     --
+--    Updated: June 22, 2018             --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 70300;
+local WL_VERSION = 80000;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -517,7 +517,6 @@ local WL_WORLD_QUESTS = {
 local CheckInteractDistance = CheckInteractDistance;
 local DungeonUsesTerrainMap = DungeonUsesTerrainMap;
 local GetAchievementCriteriaInfo = GetAchievementCriteriaInfo;
-local GetCurrentMapDungeonLevel = GetCurrentMapDungeonLevel;
 local GetCursorPosition = GetCursorPosition;
 local GetFactionInfo = GetFactionInfo;
 local GetInstanceInfo = GetInstanceInfo;
@@ -540,7 +539,18 @@ local GetNumArtifactsByRace = GetNumArtifactsByRace;
 local GetNumQuestLeaderBoards = GetNumQuestLeaderBoards;
 local GetNumQuestLogEntries = GetNumQuestLogEntries;
 local GetNumRaidMembers = GetNumRaidMembers;
-local GetPlayerMapPosition = GetPlayerMapPosition;
+
+local GetPlayerMapPosition = function(unitToken)
+    local uiMapID = C_Map.GetBestMapForUnit(unitToken) or WorldMapFrame:GetMapID();
+    local location = C_Map.GetPlayerMapPosition(uiMapID, unitToken);
+
+    if not location then
+        return 0, 0;
+    end
+
+    return C_Map.GetPlayerMapPosition(uiMapID, unitToken):GetXY();
+end
+
 local GetProgressText = GetProgressText;
 local GetQuestID = GetQuestID;
 local GetQuestLogLeaderBoard = GetQuestLogLeaderBoard;
@@ -563,9 +573,7 @@ local LootSlotIsCoin = LootSlotIsCoin;
 local LootSlotIsCurrency = LootSlotIsCurrency;
 local LootSlotIsItem = LootSlotIsItem;
 local SelectQuestLogEntry = SelectQuestLogEntry;
-local SendAddonMessage = SendAddonMessage;
-local SetDungeonMapLevel = SetDungeonMapLevel;
-local SetMapToCurrentZone = SetMapToCurrentZone;
+local SendAddonMessage = C_ChatInfo.SendAddonMessage;
 local UnitClass = UnitClass;
 local UnitExists = UnitExists;
 local UnitFactionGroup = UnitFactionGroup;
@@ -945,11 +953,11 @@ function wlRegisterUnitLocation(id, level)
     
     local dd = wlGetInstanceDifficulty();
     local mapAreaID = wlGetCurrentMapAreaID();
-    local zone, x, y, dl = wlGetLocation();
+    local zone, x, y, uiMapID = wlGetLocation();
 
     wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, mapAreaID, "init", { n = 0 });
 
-    local i = wlGetLocationIndex(wlUnit[id].spec[dd][level].loc[zone][mapAreaID], x, y, dl, 5);
+    local i = wlGetLocationIndex(wlUnit[id].spec[dd][level].loc[zone][mapAreaID], x, y, uiMapID, 5);
     if i then
         local n = wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].n;
 
@@ -961,7 +969,7 @@ function wlRegisterUnitLocation(id, level)
         wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, mapAreaID, i, "set", {
             x = x,
             y = y,
-            dl = dl,
+            dl = uiMapID,
             n = 1,
         });
     end
@@ -1055,12 +1063,6 @@ end
 
 function wlEvent_CONFIRM_BINDER(self)
     wlRegisterUnitGossip("binder");
-end
-
---**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
-
-function wlEvent_CONFIRM_PET_UNLEARN(self)
-    wlRegisterUnitGossip("pettrainer");
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -1585,14 +1587,14 @@ function wlRegisterObject(id)
         return;
     end
 
-    local zone, x, y, dl = wlGetLocation();
+    local zone, x, y, uiMapID = wlGetLocation();
     local mapAreaID = wlGetCurrentMapAreaID();
 
     zone = wlConcat(wlGetInstanceDifficulty(), zone);
 
     wlUpdateVariable(wlObject, id, zone, mapAreaID, "init", { n = 0 });
 
-    local i = wlGetLocationIndex(wlObject[id][zone][mapAreaID], x, y, dl, 5);
+    local i = wlGetLocationIndex(wlObject[id][zone][mapAreaID], x, y, uiMapID, 5);
     if i then
         local n = wlObject[id][zone][mapAreaID][i].n;
 
@@ -1604,7 +1606,7 @@ function wlRegisterObject(id)
         wlUpdateVariable(wlObject, id, zone, mapAreaID, i, "set", {
             x = x,
             y = y,
-            dl = dl,
+            dl = uiMapID,
             n = 1,
         });
     end
@@ -2113,7 +2115,7 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 function wlSeenInvasions()
-	if not C_WorldMap.GetAreaPOITimeLeft then return end
+	if not C_AreaPoiInfo.GetAreaPOITimeLeft then return end
 	
     local now = GetServerTime()
 
@@ -2128,7 +2130,7 @@ function wlSeenInvasions()
 	for i,v in pairs(WL_LESSER_INVASIONS) do
 		wlPrint(WL_LESSER_INVASIONS[i])
         local invasionL = WL_LESSER_INVASIONS[i];
-        local timeLeft = C_WorldMap.GetAreaPOITimeLeft(i);
+        local timeLeft = C_AreaPoiInfo.GetAreaPOITimeLeft(i);
         if (timeLeft and timeLeft > 0) then
             wlLesserInvasions[i] = {}
 			wlLesserInvasions[i].areaPoiId = i;
@@ -2145,7 +2147,7 @@ function wlSeenInvasions()
 	-- these IDs start at 5375, so let's save time by cutting to the chase
     for i,v in pairs(WL_GREATER_INVASIONS) do
         local invasionG = WL_GREATER_INVASIONS[i];
-        local timeLeft = C_WorldMap.GetAreaPOITimeLeft(i);
+        local timeLeft = C_AreaPoiInfo.GetAreaPOITimeLeft(i);
         if (timeLeft and timeLeft > 0) then
             wipe(lines);
             lines[1] = invasionG;
@@ -2237,12 +2239,12 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_UNIT_SPELLCAST_SENT(self, unit, spell, rank, target, lineID)
-    if unit ~= "player" or not target or wlSpellCastID then
+function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
+    if unit ~= "player" or wlSpellCastID then
         return;
     end
 
-    local spellId = wlFindSpell(spell);
+    local spellId = wlFindSpell(GetSpellInfo(spell));
 
     if spellId then
     
@@ -2295,29 +2297,30 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, spell, rank, target, lineID)
                 return;
             end
 
-            local zone, x, y, dl = wlGetLocation();
-            
+            local zone, x, y, uiMapID = wlGetLocation();
+
             wlTracker.spell.kind = "object";
             wlTracker.spell.name = target;
             wlTracker.spell.zone = zone;
             wlTracker.spell.x = x;
             wlTracker.spell.y = y;
-            wlTracker.spell.dl = dl;
+            wlTracker.spell.dl = uiMapID;
 
         -- zone (fishing)
         elseif bit_band(wlSpells[spellId][2], WL_ZONE) ~= 0 and not npcName and not itemName then
 
-            if target ~= "" then
-                return;
-            end
+            -- 8.0.1: target is nil for fishing now.
+            --if target ~= "" then
+            --    return;
+            --end
 
-            local zone, x, y, dl = wlGetLocation();
+            local zone, x, y, uiMapID = wlGetLocation();
 
             wlTracker.spell.kind = "zone";
             wlTracker.spell.zone = zone;
             wlTracker.spell.x = x;
             wlTracker.spell.y = y;
-            wlTracker.spell.dl = dl;
+            wlTracker.spell.dl = uiMapID;
 
         else
             return;
@@ -2328,7 +2331,7 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, spell, rank, target, lineID)
         wlTracker.spell.action = spellId;
         
         -- associate unit_spellcast_* events
-        wlSpellCastID = lineID;
+        wlSpellCastID = spell;
     end
 end
 
@@ -2349,13 +2352,13 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spell, rank, lineID, spellId)
+function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spellCast, spellId)
     if unit ~= "player" then
         return;
     end
 
     wlSpellCastID = nil;
-    spellId = tonumber(select(5, strsplit("-", lineID)), 10)
+
     if WL_LOOT_TOAST_BAGS[spellId] then
         local now = wlGetTime();
         wlClearTracker("spell");
@@ -2394,7 +2397,7 @@ function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spell, rank, lineID, spell
         wlRegisterObject(WL_ANVIL_ID);
     end
     
-    if wlTracker.spell.time and wlTracker.spell.event == "SENT" and wlTracker.spell.action == wlFindSpell(spell) then
+    if wlTracker.spell.time and wlTracker.spell.event == "SENT" and wlTracker.spell.action == wlFindSpell(GetSpellInfo(spellId)) then
         wlTracker.spell.event = "SUCCEEDED";
         wlTracker.spell.time = wlGetTime();
         if wlTracker.spell.action == "Logging" and wlTracker.spell.name then -- save location here since that action won't trigger a loot frame
@@ -2407,9 +2410,9 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_UNIT_SPELLCAST_FAILED(self, unit, spell, rank, lineID, spellID)
+function wlEvent_UNIT_SPELLCAST_FAILED(self, unit, spellCast, spellID)
     -- only reset wlTracker.spell if the 'failed' comes from an associated 'sent'
-    if unit == "player" and wlSpellCastID == lineID then
+    if unit == "player" and wlSpellCastID == spellID then
         wlSpellCastID = nil;
         wlClearTracker("spell");
         wlTrackerClearedTime = wlGetTime();
@@ -2600,7 +2603,7 @@ function wlEvent_LOOT_OPENED(self)
             wlClearTracker("spell");
             return;
         end
-        
+
         if fromFishing and wlTracker.spell.kind ~= "zone" then
             wlClearTracker("spell");
             return;
@@ -2939,10 +2942,8 @@ function wlPlaceAuctionBid(aType, aIndex, bid)
 
     if bid == buyoutPrice and id ~= 0 and enchant == 0 and socket1 == 0 and socket2 == 0 and socket3 == 0 and socket4 == 0 and count > 0 then
         -- checking for cross faction auction house
-        local oldAreaId = GetCurrentMapAreaID();
-        SetMapToCurrentZone();
-        local currentAreaId = GetCurrentMapAreaID();
-        SetMapByID(oldAreaId);
+        local currentAreaId = C_Map.GetBestMapForUnit("player");
+
         -- 161 Tanaris
         -- 281 Winterspring
         -- 673 The Cape of Stranglethorn
@@ -3068,14 +3069,12 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                 
                 -- check if the currency combo id+amount is a reward from the random dungeon
                 if instanceType == "party" then
-                    local oldAreaId = GetCurrentMapAreaID();
-                    SetMapToCurrentZone();
-                    local areaId = GetCurrentMapAreaID();
-                    SetMapByID(oldAreaId);
+                    local uiMapID = C_Map.GetBestMapForUnit("player");
+                    local areaId = C_Map.GetMapInfo(uiMapID);
                     local diff = wlSelectOne(3, GetInstanceInfo());
                     local dungeonGroupId = 0;
                     if WL_AREAID_TO_DUNGEONID[diff] then
-                        dungeonGroupId = WL_AREAID_TO_DUNGEONID[diff][areaId] or 0;
+                        dungeonGroupId = WL_AREAID_TO_DUNGEONID[diff][areaId.mapID] or 0;
                     end
                     if dungeonGroupId ~= 0 then
                         local _, _, _, _, _, numRewards = GetLFGDungeonRewards(dungeonGroupId);
@@ -3248,7 +3247,14 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_TOYS_UPDATED(self, ...)
+-- we need that here.
+local wlScanToys_processing = false
+function wlEvent_TOYS_UPDATED(self, itemID, new)
+    -- We got some new toys here.
+    if (new or itemID) then
+        wlScanToys_processing = false
+    end
+
     wlScanToys();
 end
 
@@ -3354,14 +3360,16 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-local wlScanToys_processing = false
-function wlScanToys()
+function wlScanToys(processToys)
+    -- Initial event call.
     if wlScanToys_processing then -- toys_updated events might fire when we change filters
         return
     end
+
     if C_ToyBox.GetNumLearnedDisplayedToys() == 0 then
         return
     end
+
     wlScanToys_processing = true
 
     local ids = ""
@@ -3409,7 +3417,8 @@ function wlScanToys()
     end
     C_ToyBox.ForceToyRefilter()
 
-    wlScanToys_processing = false
+    -- Handled by the parent function.
+    --wlScanToys_processing = false
 
     if ids ~= "" then
         wlScans.toys = ids;
@@ -3763,64 +3772,19 @@ end
 
 function wlGetLocation()
     local zone = GetRealZoneText() or "";
-    local mainZone, _, _, isMicroZone, microZone = GetMapInfo();
-    
+    local uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
+    local uiMapDetails = C_Map.GetMapInfo(uiMapID);
+
     -- Save Map
-    local currentDL = GetCurrentMapDungeonLevel() or 0;
-    local currentId = GetCurrentMapAreaID();
-    local wasMicroZone = isMicroZone;
-    local oldMicroZone = microZone;
-    
-    -- Obtain true coords
-    SetMapToCurrentZone();
-    mainZone, _, _, isMicroZone, microZone = GetMapInfo();
-    if ((wlSelectOne(2, GetInstanceInfo()) == "none") and not WL_ZONE_EXCEPTION[microZone] and (isMicroZone == true)) then
-        SetMapByID(GetCurrentMapAreaID());
-    end
-    
+    local wasMicroZone = uiMapDetails.mapType == 5;
+    local oldMicroZone = uiMapDetails.name;
     local x, y = GetPlayerMapPosition("player");
-    local dl = GetCurrentMapDungeonLevel() or 0;
     
     if not x or not y then
         x, y = 0, 0;
     end
-
-    if x == 0 and y == 0 then
-        local floorMapCount, firstFloor = GetNumDungeonMapLevels();
-        floorMapCount = floorMapCount or 1
-        firstFloor = firstFloor or 1
-        local lastFloor = firstFloor + floorMapCount - 1;
-        for level=firstFloor, lastFloor do
-            SetDungeonMapLevel(level);
-            x, y = GetPlayerMapPosition("player");
-
-            if x and y and (x > 0 or y > 0) then
-                SetDungeonMapLevel(dl); -- Restore
-                dl = level;
-                break;
-            end
-
-            x, y = 0, 0;
-        end
-    end
-
-    if DungeonUsesTerrainMap() then
-        dl = dl - 1;
-    end
-
-    -- Restore Map
-    if wasMicroZone then
-        if WL_ZONE_EXCEPTION[oldMicroZone] then
-            SetMapByID(WL_ZONE_EXCEPTION[oldMicroZone]);
-        else
-            SetMapToCurrentZone();
-        end
-    else
-        SetMapByID(currentId);
-    end
-    SetDungeonMapLevel(currentDL); 
     
-    return zone, floor(x * 1000 + 0.5), floor(y * 1000 + 0.5), dl;
+    return zone, floor(x * 1000 + 0.5), floor(y * 1000 + 0.5), uiMapID;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -3868,10 +3832,6 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlEvent_ZONE_CHANGED()
-    if (not WorldMapFrame or not WorldMapFrame:IsShown()) and (not BattlefieldMinimap or not BattlefieldMinimap:IsShown()) then
-        SetMapToCurrentZone();
-    end
-
     wlLocTooltipFrame_OnUpdate();
 end
 
@@ -3910,7 +3870,6 @@ local wlEvents = {
     BANKFRAME_OPENED = wlEvent_BANKFRAME_OPENED,
     BATTLEFIELDS_SHOW = wlEvent_BATTLEFIELDS_SHOW,
     CONFIRM_BINDER = wlEvent_CONFIRM_BINDER,
-    CONFIRM_PET_UNLEARN = wlEvent_CONFIRM_PET_UNLEARN,
     CONFIRM_TALENT_WIPE = wlEvent_CONFIRM_TALENT_WIPE,
     GOSSIP_CONFIRM_CANCEL = wlEvent_GOSSIP_CONFIRM_CANCEL,
     GOSSIP_ENTER_CODE = wlEvent_GOSSIP_ENTER_CODE,
@@ -3983,8 +3942,6 @@ local wlEvents = {
     -- completist
     TRADE_SKILL_DATA_SOURCE_CHANGED = wlEvent_TRADE_SKILL_DATA_SOURCE_CHANGED,
     CURRENCY_DISPLAY_UPDATE = wlEvent_CURRENCY_DISPLAY_UPDATE,
-    ARTIFACT_HISTORY_READY = wlEvent_ARTIFACT_HISTORY_READY,
-    ARTIFACT_COMPLETE = wlEvent_ARTIFACT_COMPLETE,
     RESEARCH_ARTIFACT_HISTORY_READY = wlEvent_ARTIFACT_HISTORY_READY,
     RESEARCH_ARTIFACT_COMPLETE = wlEvent_ARTIFACT_COMPLETE,
     TRANSMOG_COLLECTION_UPDATED = wlEvent_TRANSMOG_COLLECTION_UPDATED,
@@ -3993,8 +3950,6 @@ local wlEvents = {
     COMPANION_UNLEARNED = wlEvent_MOUNTS_UPDATED,
     COMPANION_UPDATE = wlEvent_MOUNTS_UPDATED,
     KNOWN_TITLES_UPDATE = wlEvent_TITLES_UPDATED,
-    NEW_TITLE_EARNED = wlEvent_TITLES_UPDATED,
-    OLD_TITLE_LOST = wlEvent_TITLES_UPDATED,
     ACHIEVEMENT_EARNED = wlEvent_ACHIEVEMENTS_UPDATED,
     GARRISON_FOLLOWER_ADDED = wlEvent_FOLLOWERS_UPDATED,
     GARRISON_FOLLOWER_LIST_UPDATE = wlEvent_FOLLOWERS_UPDATED,
@@ -4552,14 +4507,20 @@ end
 function wlLocMapFrame_OnLoad()
     wlLocMapFrameText:SetText(UnitName("player")..": 100.0, 100.0  -  "..NOT_APPLICABLE..": 100.0, 100.0");
     wlLocMapFrame:SetWidth(wlLocMapFrameText:GetStringWidth() + 20);
-    wlLocMapFrame:SetFrameLevel(MapBarFrame:GetFrameLevel() + 1);
+    wlLocMapFrame:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 1);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlLocMapFrame_OnUpdate()
     -- Player
-    local pX, pY = GetPlayerMapPosition("player");
+    -- Use the current world map instead of the real players map here.
+    local location = C_Map.GetPlayerMapPosition(WorldMapFrame:GetMapID() or C_Map.GetBestMapForUnit("player"), "player");
+    local pX, pY = 0, 0;
+
+    if location then
+        pX, pY = location:GetXY();
+    end
 
     local playerStr = UnitName("player")..": |cffffffff";
     if not pX or pX == 0 or pY == 0 then
@@ -4569,15 +4530,14 @@ function wlLocMapFrame_OnUpdate()
     end
 
     -- Cursor
-    local width, height, scale = WorldMapDetailFrame:GetWidth(), WorldMapDetailFrame:GetHeight(), WorldMapDetailFrame:GetEffectiveScale();
-    local cX, cY = WorldMapDetailFrame:GetCenter();
-    local left, bottom = cX - width / 2, cY + height / 2;
+    -- GetNormalizedCursorPosition already returns the correct position values (with and without zoom).
+    local cX, cY = WorldMapFrame.ScrollContainer:GetNormalizedCursorPosition();
 
-    cX, cY = GetCursorPosition();
-    cX, cY = (cX / scale - left) / width * 100, (bottom - cY / scale) / height * 100;
+    -- Multiply with 100
+    cX, cY = cX * 100, cY * 100;
 
     local cursorStr = WL_LOC_CURSOR..": |cffffffff";
-    if cX < 0 or cX > 100 or cY < 0 or cY > 100 then
+    if cX <= 0 or cX >= 100 or cY <= 0 or cY >= 100 then
         cursorStr = cursorStr..NOT_APPLICABLE;
     else
         cursorStr = ("%s%.1f, %.1f"):format(cursorStr, cX, cY);
@@ -4590,7 +4550,7 @@ end
 
 function wlLocTooltipFrame_OnUpdate()
     if wlSetting.locTooltip then
-        local pX, pY = GetPlayerMapPosition("player");
+       local pX, pY = GetPlayerMapPosition("player");
         if not pX or (pX == 0 and pY == 0) then
             wlLocTooltipFrameText:SetText(NOT_APPLICABLE);
         else
@@ -5035,7 +4995,9 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlGetDate()
-    return select(2, CalendarGetDate());
+    local date = C_Calendar.GetDate();
+
+    return date.month, date.monthDay, date.year;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -5443,34 +5405,18 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlGetCurrentMapAreaID()
-    
-    local dl = GetCurrentMapDungeonLevel() or 0; -- Save DL
-    local currentId = GetCurrentMapAreaID(); -- Save Location
+    local uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
+    local uiMapDetails = C_Map.GetMapInfo(uiMapID);
     local mapAreaID = 0;
     
-    local mainZone, _, _, isMicroZone, microZone = GetMapInfo();
-    local wasMicroZone = isMicroZone;
-    local oldMicroZone = microZone;
-    
-    SetMapToCurrentZone(); -- Move Map
-    mainZone, _, _, isMicroZone, microZone = GetMapInfo();
+    local wasMicroZone = uiMapDetails.mapType == 5;
+    local oldMicroZone = uiMapDetails.name;
+
     if WL_ZONE_EXCEPTION[microZone] then
         mapAreaID = WL_ZONE_EXCEPTION[microZone];
     else
-        mapAreaID = GetCurrentMapAreaID();
+        mapAreaID = C_Map.GetBestMapForUnit("player") or C_Map.GetCurrentMapID();
     end
-    
-    -- Restore Map
-    if wasMicroZone then
-        if WL_ZONE_EXCEPTION[oldMicroZone] then
-            SetMapByID(WL_ZONE_EXCEPTION[oldMicroZone])
-        else
-            SetMapToCurrentZone();
-        end
-    else
-        SetMapByID(currentId);
-    end
-    SetDungeonMapLevel(dl); 
     
     return mapAreaID;
 end
