@@ -3,7 +3,7 @@
 ## Notes: Gathers data for Wowhead while you play.
 ## Author: mystadio
 ## eMail: feedback@wowhead.com
-## URL: http://www.wowhead.com
+## URL: https://www.wowhead.com/
 ## Version: 80000
 ## LoadOnDemand: 0
 ## DefaultState: enabled
