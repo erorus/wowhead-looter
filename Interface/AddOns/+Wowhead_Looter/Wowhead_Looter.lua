@@ -20,7 +20,7 @@ local WL_ADDONNAME, WL_ADDONTABLE = ...
 wlTime = GetServerTime();
 wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = 0, 0, "", "", {};
 wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
-wlDailies, wlWorldQuests, wlLesserInvasions, wlGreaterInvasions = "", "", {}, "";
+wlDailies, wlWorldQuests = "", "";
 wlRegionBuildings = {};
 
 -- SavedVariablesPerCharacter
@@ -203,29 +203,6 @@ local WL_REP_MODS = {
     [GetSpellInfo(136583)] = {nil, 0.1},
     [GetSpellInfo(46668)] = {nil, 0.1},
 };
-local WL_LESSER_INVASIONS = {
-    [5350] = "sangua",   -- invasion point: sangua
-    [5369] = "sangua",   -- invasion point: sangua
-    [5359] = "cen'gar",   -- invasion point: cen'gar
-    [5370] = "cen'gar",   -- invasion point: cen'gar
-    [5360] = "val",   -- invasion point: val
-    [5372] = "val",   -- invasion point: val
-    [5366] = "bonich",   -- invasion point: bonich
-    [5371] = "bonich",   -- invasion point: bonich
-    [5373] = "arinor",   -- invasion point: aurinor
-    [5367] = "aurinor",   -- invasion point: aurinor
-    [5368] = "aurinor",   -- invasion point: naigtal
-    [5374] = "naigtal",   -- invasion point: naigtal
-}
-
-local WL_GREATER_INVASIONS = {
-    [5375] = "124625",	-- Mistress Alluradel
-	[5376] = "124492",	-- Occularus
-	[5377] = "124719",	-- Pit Lord Vilemus
-	[5379] = "124592",	-- Inquisitor Meto
-	[5380] = "124555",	-- Sotanathor
-	[5381] = "124514",	-- Matron Folnuna
-}
 -- Map currency name to currency ID
 local WL_CURRENCIES = {};
 local WL_CURRENCIES_MAXID = 2400;
@@ -2038,6 +2015,7 @@ function wlGetBuildings()
             timeStart = timeStart,
             useTime = appearanceData and appearanceData.tooltipUseTimeRemaining,
             buffs = {buff1, buff2},
+            realm = wlGetPlayerRealmId(),
         };
     end
 end
@@ -2098,13 +2076,7 @@ function wlSeenDaily(questId)
     local today = ''..resetTime..','
     local toAdd = questId..','
 
-    local guid = wlScans.guid
-    local realmId = 0
-    if guid then
-        realmId = tonumber(strmatch(guid, "^Player%-(%d+)"))
-    end
-
-    local key = 'r'..realmId..'='
+    local key = 'r'..wlGetPlayerRealmId()..'='
 
     local s, e = strfind(wlDailies, key.."[^;]*;");
 
@@ -2164,13 +2136,7 @@ function wlSeenWorldQuests()
     end
 
     if resultCount > 0 then
-        local guid = wlScans.guid
-        local realmId = 0
-        if guid then
-            realmId = tonumber(strmatch(guid, "^Player%-(%d+)"))
-        end
-
-        wlWorldQuests = realmId .. '=' .. table.concat(results,',')
+        wlWorldQuests = wlGetPlayerRealmId() .. '=' .. table.concat(results,',')
     end
 end
 
@@ -2185,56 +2151,6 @@ function wlSeenIslandExpeditions()
         if info.shownState ~= 0 then
             wlSeenDaily('t'..info.portraitTextureKitID)
         end
-    end
-end
-
---**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
-function wlSeenInvasions()
-	if not C_AreaPoiInfo.GetAreaPOITimeLeft then return end
-	
-    local now = GetServerTime()
-
-    local resultsLess = {}
-	local resultsGreat = {};
-    local resultCount = 0
-    local lines = {}
-
-	-- handle lesser invasions
-	-- starts at index 5349
-    --for i = 5349, #WL_LESSER_INVASIONS, 1 do
-	for i,v in pairs(WL_LESSER_INVASIONS) do
-		wlPrint(WL_LESSER_INVASIONS[i])
-        local invasionL = WL_LESSER_INVASIONS[i];
-        local timeLeft = C_AreaPoiInfo.GetAreaPOITimeLeft(i);
-        if (timeLeft and timeLeft > 0) then
-            wlLesserInvasions[i] = {}
-			wlLesserInvasions[i].areaPoiId = i;
-            --wlLesserInvasions[i].name = invasionL;
-            wlLesserInvasions[i].endTime = now + timeLeft * 60;
-
-            resultCount = resultCount + 1;
-        end
-    end
-	resultCount = 0;
-	
-	
-	-- handle greater invasions
-	-- these IDs start at 5375, so let's save time by cutting to the chase
-    for i,v in pairs(WL_GREATER_INVASIONS) do
-        local invasionG = WL_GREATER_INVASIONS[i];
-        local timeLeft = C_AreaPoiInfo.GetAreaPOITimeLeft(i);
-        if (timeLeft and timeLeft > 0) then
-            wipe(lines);
-            lines[1] = invasionG;
-
-            resultCount = resultCount + 1;
-            resultsGreat[resultCount] = table.concat(lines, 'x');
-        end
-    end
-
-    if resultCount > 0 then
-
-        wlGreaterInvasions = table.concat(resultsGreat,',');
     end
 end
 
@@ -3055,7 +2971,6 @@ function wlCollect(userInitiated)
 
     wlQueryTimePlayed();
     
-    wlSeenInvasions()
     wlScanAppearances()
     wlScanToys()
     wlScanMounts()
@@ -3798,13 +3713,7 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlGetExportDataValue()
-    local guid = wlScans.guid
-    local realmId = 0
-    if guid then
-        realmId = tonumber(strmatch(guid, "^Player%-(%d+)"))
-    end
-
-    local value = "&realmId="..realmId.."&timePlayedTotal="..wlScans.timePlayedTotal.."&achievements="..wlScans.achievements.."&toys="..wlScans.toys.."&mounts="..wlScans.mounts.."&titles="..wlScans.titles.."&followers="..wlScans.followers.."&heirlooms="..wlScans.heirlooms.."&appearances="..wlScans.appearances;
+    local value = "&realmId="..wlGetPlayerRealmId().."&timePlayedTotal="..wlScans.timePlayedTotal.."&achievements="..wlScans.achievements.."&toys="..wlScans.toys.."&mounts="..wlScans.mounts.."&titles="..wlScans.titles.."&followers="..wlScans.followers.."&heirlooms="..wlScans.heirlooms.."&appearances="..wlScans.appearances;
     value = value .. "&projects=" .. wlScans.projects;
     return value;
 end
@@ -4986,7 +4895,15 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+function wlGetPlayerRealmId()
+    local guid = wlScans.guid
+    local realmId = 0
+    if guid then
+        realmId = tonumber(strmatch(guid, "^Player%-(%d+)"))
+    end
 
+    return realmId;
+end
 
 ----------------------------
 ----------------------------
