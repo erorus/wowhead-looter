@@ -1475,9 +1475,17 @@ local WL_MINDCONTROL_FLAGS = bit_bor(COMBATLOG_OBJECT_TYPE_PET, COMBATLOG_OBJECT
 local WL_PURE_NPC_FLAGS = bit_bor(COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_CONTROL_NPC, COMBATLOG_OBJECT_REACTION_HOSTILE, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER);
 local wlMostRecentEliteKilled = {};
 local wlConsecutiveNpcKills = 0;
-function wlEvent_COMBAT_LOG_EVENT_UNFILTERED(self, timestamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, ...)
+
+function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
+
+    local timestamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, extraArg1, extraArg2, extraArg3, extraArg4, extraArg5, extraArg6, extraArg7, extraArg8, extraArg9, extraArg10 = CombatLogGetCurrentEventInfo();
+
+    -- Only for certain events
+    local spellId = extraArg1;
+    local spellName = extraArg2;
+
     -- Extract Gas (Cloud)
-    if event == "SPELL_CAST_SUCCESS" and select(1, ...) == 30427 and sourceGUID == UnitGUID("player") then
+    if event == "SPELL_CAST_SUCCESS" and spellId == 30427 and sourceGUID == UnitGUID("player") then
         wlClearTracker("spell");
         local now = wlGetTime();
         wlTrackerClearedTime = now;
@@ -1486,7 +1494,6 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED(self, timestamp, event, hideCaster,
 
     elseif event == "SPELL_CAST_START" or event == "SPELL_CAST_SUCCESS" or event == "SPELL_AURA_APPLIED" then
         local unitId, kind = wlParseGUID(sourceGUID);
-        local spellId, spellName = ...;
         
         -- Spell ID is blacklisted
         if not spellId or WL_SPELL_BLACKLIST[spellId] then
