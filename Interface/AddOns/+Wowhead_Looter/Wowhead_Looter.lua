@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.0.1                     --
---    Updated: August 12, 2018             --
+--    Updated: September 13, 2018      --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -594,7 +594,12 @@ local GetNumRaidMembers = GetNumRaidMembers;
 
 local GetPlayerMapPosition = function(unitToken)
     local uiMapID = C_Map.GetBestMapForUnit(unitToken) or WorldMapFrame:GetMapID();
-    local location = C_Map.GetPlayerMapPosition(uiMapID, unitToken);
+    local location = nil;
+    
+    -- uiMapID can be nil after fresh teleports and map/instance changes.
+    if uiMapID then
+        location = C_Map.GetPlayerMapPosition(uiMapID, unitToken);
+    end
 
     if not location then
         return 0, 0;
@@ -1004,21 +1009,27 @@ function wlRegisterUnitLocation(id, level)
     wlRegisterCooldown[id] = now;
     
     local dd = wlGetInstanceDifficulty();
-    local mapAreaID = wlGetCurrentMapAreaID();
+    local uiMapID = wlGetCurrentUiMapID();
+
+    -- No location without a map/uiMap.
+    if not uiMapID then
+        return;
+    end
+
     local zone, x, y, uiMapID = wlGetLocation();
 
-    wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, mapAreaID, "init", { n = 0 });
+    wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, uiMapID, "init", { n = 0 });
 
-    local i = wlGetLocationIndex(wlUnit[id].spec[dd][level].loc[zone][mapAreaID], x, y, uiMapID, 5);
+    local i = wlGetLocationIndex(wlUnit[id].spec[dd][level].loc[zone][uiMapID], x, y, uiMapID, 5);
     if i then
-        local n = wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].n;
+        local n = wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].n;
 
-        wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].x = floor((wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].x * n + x) / (n + 1) + 0.5);
-        wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].y = floor((wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].y * n + y) / (n + 1) + 0.5);
-        wlUnit[id].spec[dd][level].loc[zone][mapAreaID][i].n = n + 1;
+        wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].x = floor((wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].x * n + x) / (n + 1) + 0.5);
+        wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].y = floor((wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].y * n + y) / (n + 1) + 0.5);
+        wlUnit[id].spec[dd][level].loc[zone][uiMapID][i].n = n + 1;
     else
-        i = wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, mapAreaID, "n", "add", 1);
-        wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, mapAreaID, i, "set", {
+        i = wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, uiMapID, "n", "add", 1);
+        wlUpdateVariable(wlUnit, id, "spec", dd, level, "loc", zone, uiMapID, i, "set", {
             x = x,
             y = y,
             dl = uiMapID,
@@ -1446,8 +1457,8 @@ function wlCheckUnitForRep(guid, name)
         end
     end
 
-    local mapAreaID = wlGetCurrentMapAreaID();
-    local taskInfo = C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaID);
+    local uiMapID = wlGetCurrentUiMapID();
+    local taskInfo = C_TaskQuest.GetQuestsForPlayerByMapID(uiMapID);
     local numTaskPOIs = 0;
     if (taskInfo ~= nil) then
         numTaskPOIs = #taskInfo;
@@ -1652,22 +1663,25 @@ function wlRegisterObject(id)
     end
 
     local zone, x, y, uiMapID = wlGetLocation();
-    local mapAreaID = wlGetCurrentMapAreaID();
+
+    if not uiMapID then
+        return;
+    end
 
     zone = wlConcat(wlGetInstanceDifficulty(), zone);
 
-    wlUpdateVariable(wlObject, id, zone, mapAreaID, "init", { n = 0 });
+    wlUpdateVariable(wlObject, id, zone, uiMapID, "init", { n = 0 });
 
-    local i = wlGetLocationIndex(wlObject[id][zone][mapAreaID], x, y, uiMapID, 5);
+    local i = wlGetLocationIndex(wlObject[id][zone][uiMapID], x, y, uiMapID, 5);
     if i then
-        local n = wlObject[id][zone][mapAreaID][i].n;
+        local n = wlObject[id][zone][uiMapID][i].n;
 
-        wlObject[id][zone][mapAreaID][i].x = floor((wlObject[id][zone][mapAreaID][i].x * n + x) / (n + 1) + 0.5);
-        wlObject[id][zone][mapAreaID][i].y = floor((wlObject[id][zone][mapAreaID][i].y * n + y) / (n + 1) + 0.5);
-        wlObject[id][zone][mapAreaID][i].n = n + 1;
+        wlObject[id][zone][uiMapID][i].x = floor((wlObject[id][zone][uiMapID][i].x * n + x) / (n + 1) + 0.5);
+        wlObject[id][zone][uiMapID][i].y = floor((wlObject[id][zone][uiMapID][i].y * n + y) / (n + 1) + 0.5);
+        wlObject[id][zone][uiMapID][i].n = n + 1;
     else
-        i = wlUpdateVariable(wlObject, id, zone, mapAreaID, "n", "add", 1);
-        wlUpdateVariable(wlObject, id, zone, mapAreaID, i, "set", {
+        i = wlUpdateVariable(wlObject, id, zone, uiMapID, "n", "add", 1);
+        wlUpdateVariable(wlObject, id, zone, uiMapID, i, "set", {
             x = x,
             y = y,
             dl = uiMapID,
@@ -1795,7 +1809,7 @@ function wlEvent_QUEST_LOG_UPDATE(self)
                     if index and done and wlQuestObjectives[3 - wlCurrentQuestObj][index].done ~= done then
                         wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
                         wlEvent[wlId][wlN][eventId].what = "questStatus";
-                        wlEvent[wlId][wlN][eventId][wlConcat(questId, objId, done)] = wlConcat(wlGetLocation(),wlGetCurrentMapAreaID());
+                        wlEvent[wlId][wlN][eventId][wlConcat(questId, objId, done)] = wlConcat(wlGetLocation(),wlGetCurrentUiMapID());
                     end
                 end
             end
@@ -2682,7 +2696,11 @@ function wlEvent_LOOT_OPENED(self)
         end
 
         if wlIsInParty() then
-            SendAddonMessage("WL_LOOT_COOLDOWN", guid, IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
+            -- SendAddonMessage does not allow to send nil or "" as msg.
+            -- Only send it if we got a valid 'guid'. This should not affect any data.
+            if guid then
+                SendAddonMessage("WL_LOOT_COOLDOWN", guid, IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
+            end
         else
             wlEvent_CHAT_MSG_ADDON(self, "WL_LOOT_COOLDOWN", guid, "RAID", UnitName("player"));
         end
@@ -2696,7 +2714,7 @@ function wlEvent_LOOT_OPENED(self)
     wlEvent[wlId][wlN][eventId].dd = instanceDiff;
 
     if wlEvent[wlId][wlN][eventId].zone ~= nil then
-        wlEvent[wlId][wlN][eventId].mapAreaID = wlGetCurrentMapAreaID();
+        wlEvent[wlId][wlN][eventId].uiMapID = wlGetCurrentUiMapID();
     end
     
     local flags = 0;
@@ -3778,9 +3796,10 @@ function wlGetLocation()
     local uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
     local uiMapDetails = C_Map.GetMapInfo(uiMapID);
 
-    -- Save Map
-    local wasMicroZone = uiMapDetails.mapType == 5;
-    local oldMicroZone = uiMapDetails.name;
+    if WL_ZONE_EXCEPTION[uiMapDetails.name] then
+        uiMapID = WL_ZONE_EXCEPTION[uiMapDetails.name];
+    end
+
     local x, y = GetPlayerMapPosition("player");
     
     if not x or not y then
@@ -5413,21 +5432,23 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlGetCurrentMapAreaID()
+function wlGetCurrentUiMapID()
     local uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
-    local uiMapDetails = C_Map.GetMapInfo(uiMapID);
-    local mapAreaID = 0;
-    
-    local wasMicroZone = uiMapDetails.mapType == 5;
-    local oldMicroZone = uiMapDetails.name;
 
-    if WL_ZONE_EXCEPTION[microZone] then
-        mapAreaID = WL_ZONE_EXCEPTION[microZone];
+    -- uiMapID can be nil after fresh teleports and map/instance changes.
+    if not uiMapID then
+        return nil;
+    end
+
+    local uiMapDetails = C_Map.GetMapInfo(uiMapID);
+
+    if WL_ZONE_EXCEPTION[uiMapDetails.name] then
+        uiMapID = WL_ZONE_EXCEPTION[uiMapDetails.name];
     else
-        mapAreaID = C_Map.GetBestMapForUnit("player") or C_Map.GetCurrentMapID();
+        uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
     end
     
-    return mapAreaID;
+    return uiMapID;
 end
     
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
