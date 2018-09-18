@@ -1186,6 +1186,24 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+local WL_SPELL_SCRAPPING = (C_ScrappingMachineUI and C_ScrappingMachineUI.GetScrapSpellID()) or 265742;
+
+-- return the first pending item in the scrapping machine
+function wlGetCurrentScrappingItemLink()
+    for idx = 0, 8 do
+        local loc = C_ScrappingMachineUI.GetCurrentPendingScrapItemLocationByIndex(idx);
+        if loc then
+            local _,_,_,_,_,_,itemLink = GetContainerItemInfo(loc.bagID, loc.slotIndex);
+            if itemLink ~= nil then
+                return itemLink;
+            end
+        end
+    end
+    return nil;
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
 function wlEvent_PET_BAR_UPDATE(self)
     local id, kind = wlUnitGUID("pet");
     if wlCurrentMindControlTarget and wlCurrentMindControlTarget ~= id then
@@ -1582,6 +1600,10 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             ["id"] = id,
             ["timeOfDeath"] = now,
         };
+
+    elseif event == "SPELL_CAST_FAILED" and spellId == WL_SPELL_SCRAPPING then
+        wlClearTracker("spell");
+
     end
 end
 
@@ -2237,6 +2259,7 @@ local wlSpells = {
     MindControl = { GetSpellInfo(605) or "", WL_NPC, nil },
     Archaeology = { GetSpellInfo(73979) or "", WL_OBJECT, 1 },
     Logging = { GetSpellInfo(167895) or "", WL_OBJECT, nil },
+    Scrapping = { GetSpellInfo(WL_SPELL_SCRAPPING) or "", WL_ITEM, 1 },
     -- BeastLore = { GetSpellInfo(1462) or "", WL_NPC, nil },
     -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 }, 
 };
@@ -2300,6 +2323,14 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
             elseif target and target ~= "" then
                 wlTracker.spell.id = wlParseItemLink(wlSelectOne(2, GetItemInfo(target)));
                 wlTracker.spell.name = target;
+
+	    elseif spell == WL_SPELL_SCRAPPING then
+                local scrappingItemLink = wlGetCurrentScrappingItemLink();
+                if scrappingItemLink ~= nil then
+                    wlTracker.spell.id,_,_,_,_,_,_,wlTracker.spell.name = wlParseItemLink(scrappingItemLink);
+                    wlTracker.spell.time = wlGetTime();
+                    wlTracker.spell.isScrapping = true;
+                end
 
             else
                 wlTracker.spell.id = nil;
@@ -2885,13 +2916,17 @@ end
 local LOOT_ITEM_PUSHED_SELF = LOOT_ITEM_PUSHED_SELF:gsub("%%s", "(.+)");
 local LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%s", "(.+)");
 LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%d", "(%%d+)");
-function wlEvent_CHAT_MSG_LOOT(self, msg)
+function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName) 
     local now = wlGetTime();
     if not wlTracker.spell.id or not wlTracker.spell.time or not wlIsValidInterval(wlTracker.spell.time or 0, now, 500) then
         return;
     end
 
-    if not WL_SALVAGE_ITEMS[wlTracker.spell.id] and not WL_SPECIAL_CONTAINERS[wlTracker.spell.id] then
+    if not WL_SALVAGE_ITEMS[wlTracker.spell.id] and not WL_SPECIAL_CONTAINERS[wlTracker.spell.id] and not wlTracker.spell.isScrapping then
+        return;
+    end
+
+    if wlTracker.spell.isScrapping and msgLootName ~= nil and wlUnitName("player") ~= msgLootName then
         return;
     end
 
@@ -2916,8 +2951,12 @@ function wlEvent_CHAT_MSG_LOOT(self, msg)
         local eventId = wlTracker.spell.specialEventId;
         if not eventId then
             eventId = wlGetNextEventId();
+            if wlTracker.spell.isScrapping then
+                wlTracker.spell.action = "Scrapping";
+            else
+                wlTracker.spell.action = "Opening";
+            end
             wlTracker.spell.specialEventId = eventId;
-            wlTracker.spell.action = "Opening";
             wlTracker.spell.kind = "item";
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
             wlEvent[wlId][wlN][eventId].what = "loot";
