@@ -442,11 +442,6 @@ local WL_DAILY_PROFESSION_TRADER_QUESTS = { 38243, 38290, 38293, 38287, 38296 }
 -- quests that are repeatable/daily/weekly and we're tracking them, but the game doesn't consider them to be dailies
 local WL_DAILY_BUT_NOT_REALLY = {
     41183,40857,41167,41164,41192,41171, -- Dariness (Rare Archaeology projects)
-
-    -- Warfront Contribution
-    52048,52792,52928,52929,52930,53195,53205,53217,53218,53228,53230,53232,53237,53239,53240,53241,53242,53243,
-    53245,53246,53247,53249,53250,53251,53253,53254,53256,53257,53258,53260,53261,53262,53264,53265,53334,53335,
-    53359,53360,53361,53362,53364,53365,53367,
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
@@ -1929,6 +1924,13 @@ function wlEvent_QUEST_PROGRESS(self)
         -- also, we don't want in-progress quests from other days to get picked up, so only prof dailies can trigger "seen" on progress event
         if tContains(WL_DAILY_PROFESSION_TRADER_QUESTS, wlTracker.quest.id) then
             wlSeenDaily(wlTracker.quest.id)
+        else
+            local tagId = GetQuestTagInfo(wlTracker.quest.id)
+
+            -- Check for warfront contribution tag
+            if tagId == 153 then
+                wlSeenDaily(wlTracker.quest.id)
+            end
         end
     end
 
