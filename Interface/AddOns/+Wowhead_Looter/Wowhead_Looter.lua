@@ -686,6 +686,7 @@ local wlSpellCastID = nil;
 local wlTrackerClearedTime = 0;
 local wlChatLootIsBlocked = false;
 local wlLastShipmentContainer = nil;
+local wlLockedID = nil;
 
 -- Hooks
 local wlDefaultGetQuestReward;
@@ -2319,7 +2320,7 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
 
             wlTracker.spell.kind = "item";
 
-            if itemName and itemName == target then
+            if itemName and (target == nil or itemName == target) then
                 wlTracker.spell.id = wlParseItemLink(itemLink);
                 wlTracker.spell.name = itemName;
 
@@ -2611,6 +2612,11 @@ function wlGetLockedID()
             end
         end
     end
+    if wlLockedID ~= nil then
+	local ret = wlLockedID;
+	wlLockedID = nil;
+	return ret;
+    end
     return nil;
 end
 
@@ -2897,6 +2903,23 @@ function wlEvent_LOOT_OPENED(self)
     --     wlPrint("------GetLootSourceInfo(" .. slot .. ")------");
     --     wlPrint(GetLootSourceInfo(slot));
     -- end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+function wlEvent_ITEM_LOCK_CHANGED(self, bag, slot)
+
+    if not bag or not slot or not wlTracker.spell or not wlTracker.spell.id then
+	return;
+    end
+
+    local itemLink = GetContainerItemLink(bag, slot);
+    local itemID = wlParseItemLink(itemLink);
+
+    if select(3, GetContainerItemInfo(bag, slot)) and wlTracker.spell.id == itemID then
+	wlLockedID = itemID;
+    end
+
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -3960,6 +3983,7 @@ local wlEvents = {
     UNIT_SPELLCAST_FAILED = wlEvent_UNIT_SPELLCAST_FAILED,
     UNIT_SPELLCAST_INTERRUPTED = wlEvent_UNIT_SPELLCAST_FAILED,
     UNIT_SPELLCAST_FAILED_QUIET = wlEvent_UNIT_SPELLCAST_FAILED,
+    ITEM_LOCK_CHANGED = wlEvent_ITEM_LOCK_CHANGED,
 
     -- chat loot blocking
     GARRISON_MISSION_NPC_CLOSED = wlEvent_UnBlockChatLoot,
