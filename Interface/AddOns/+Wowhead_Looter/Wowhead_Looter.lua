@@ -1847,6 +1847,48 @@ function wlEvent_QUEST_LOG_UPDATE(self)
     
 end
 
+
+function wlEvent_QUEST_LOOT_RECEIVED(self, ...)
+
+    local questId, actualRewardItemLink = ...;
+
+    if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
+        return;
+    end
+
+    if not wlTracker.quest or wlTracker.quest.id ~= questId or not actualRewardItemLink or not wlTracker.quest.rewardItemLinks then
+        return;
+    end
+
+    local rewardItemId = wlParseItemLink(actualRewardItemLink);
+
+    for i = 1, #wlTracker.quest.rewardItemLinks do
+        local questRewardItemId = wlParseItemLink(wlTracker.quest.rewardItemLinks[i]);
+        if (questRewardItemId == rewardItemId) then
+            return;
+        end
+    end
+
+    -- associate reward from quest with the actual item received
+    local virtualRewardItemLink = wlTracker.quest.rewardItemLinks[1];   -- currently assume the first one
+    local virtualRewardItemId = wlParseItemLink(virtualRewardItemLink);
+    local eventId = wlGetNextEventId();
+    wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
+    wlEvent[wlId][wlN][eventId].id = virtualRewardItemId;
+    wlEvent[wlId][wlN][eventId].action = "Opening";
+    wlEvent[wlId][wlN][eventId].kind = "item";
+    wlEvent[wlId][wlN][eventId].what = "loot";
+    wlEvent[wlId][wlN][eventId].dd = 0;
+    wlEvent[wlId][wlN][eventId].flags = 0;
+    wlEvent[wlId][wlN][eventId].isAoeLoot = 0;
+    wlEvent[wlId][wlN][eventId].questId = questId;
+    wlEvent[wlId][wlN][eventId].virtualRewardItemLink = virtualRewardItemLink;
+    wlEvent[wlId][wlN][eventId].drop = { tostring(rewardItemId) .. "^1" };
+    wlEvent[wlId][wlN][eventId].dropLink = { actualRewardItemLink };
+
+end
+
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 -- Build loremaster quest achievements list
@@ -1868,6 +1910,28 @@ function wlGetNumLoremasterQuestCompleted()
     end
 
     return nQuestCompleted;
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+function wlGetQuestItemLinks(typeName)
+
+    local itemLinks = {}
+
+    for i = 1,6 do
+        local itemLink = GetQuestItemLink(typeName, i);
+        if (itemLink) then
+            table.insert(itemLinks, itemLink);
+        else
+            break;
+        end
+    end
+
+    if #itemLinks > 0 then
+        return itemLinks
+    end
+
+    return nil;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -1947,6 +2011,8 @@ function wlEvent_QUEST_COMPLETE(self)
         wlTracker.quest.progress = "";
     end
 
+    wlTracker.quest.rewardItemLinks = wlGetQuestItemLinks("reward");
+    wlTracker.quest.choiceItemLinks = wlGetQuestItemLinks("choice");
     wlTracker.quest.complete = wlGetSourceText(GetRewardText());
 
     wlTracker.quest.time = wlGetTime();
@@ -2032,6 +2098,9 @@ function wlRegisterQuestReturn()
     if oldNumQuestCompleted == wlNumQuestCompleted - 1 then
         wlEvent[wlId][wlN][eventId].loremaster = 1;
     end
+
+    wlEvent[wlId][wlN][eventId].rewardItemLinks = wlTracker.quest.rewardItemLinks;
+    wlEvent[wlId][wlN][eventId].choiceItemLinks = wlTracker.quest.choiceItemLinks;
 
     wlTracker.quest.time = wlGetTime();
     wlTracker.quest.eventId = eventId;
@@ -4012,6 +4081,7 @@ local wlEvents = {
     QUEST_PROGRESS = wlEvent_QUEST_PROGRESS,
     QUEST_COMPLETE = wlEvent_QUEST_COMPLETE,
     QUEST_LOG_UPDATE = wlEvent_QUEST_LOG_UPDATE,
+    QUEST_LOOT_RECEIVED = wlEvent_QUEST_LOOT_RECEIVED,
     UNIT_QUEST_LOG_CHANGED = wlEvent_UNIT_QUEST_LOG_CHANGED,
     COMBAT_TEXT_UPDATE = wlEvent_COMBAT_TEXT_UPDATE,
 
