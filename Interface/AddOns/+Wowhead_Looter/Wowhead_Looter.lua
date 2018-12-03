@@ -2117,6 +2117,8 @@ function wlGetBuildings()
         4,   -- Nether Disruptor
         11,  -- Battle for Stromgarde (Horde)
         116, -- Battle for Stromgarde (Alliance)
+        117, -- Battle for Darkshore
+        118, -- Battle for Darkshore
     }
     wipe(wlRegionBuildings);
     for k, i in ipairs(contributionIds) do
