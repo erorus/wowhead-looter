@@ -446,6 +446,11 @@ local WL_DAILY_BUT_NOT_REALLY = {
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
 
+local WL_WORLD_QUEST_EMISSARY_MAPS = {
+    619, -- Broken Isles - pick up Legion emissaries
+    875, -- Zandalar - pick up BFA emissaries
+}
+
 -- Speed optimizations
 local CheckInteractDistance = CheckInteractDistance;
 local DungeonUsesTerrainMap = DungeonUsesTerrainMap;
@@ -2123,6 +2128,20 @@ function wlSeenWorldQuests()
     -- Build each line by concatenating values in this table
     local lines = {}
 
+    local function addWorldQuestLine(questId)
+        wipe(lines)
+        lines[1] = questId
+        lines[2] = now + C_TaskQuest.GetQuestTimeLeftMinutes(questId) * 60
+        for j = 1, GetNumQuestLogRewards(questId) do
+            local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
+            if (itemId) then
+                tinsert(lines, numItems)
+                tinsert(lines, itemId)
+            end
+        end
+        results[#results + 1] = table.concat(lines, 'x')
+    end
+
     -- We're looking for the cosmic map. GetFallbackWorldMapID() should start us on Azeroth.
     local rootMapId = C_Map.GetFallbackWorldMapID();
     local rootMapInfo = C_Map.GetMapInfo(rootMapId)
@@ -2147,18 +2166,16 @@ function wlSeenWorldQuests()
             -- We will pick up some optional quests that have icons on the map. Make sure this is a world quest.
             local _, _, worldQuestType = GetQuestTagInfo(questId)
             if worldQuestType ~= nil then
-                wipe(lines)
-                lines[1] = questId
-                lines[2] = now + C_TaskQuest.GetQuestTimeLeftMinutes(questId) * 60
-                for j = 1, GetNumQuestLogRewards(questId) do
-                    local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
-                    if (itemId) then
-                        tinsert(lines, numItems)
-                        tinsert(lines, itemId)
-                    end
-                end
-                results[#results + 1] = table.concat(lines, 'x')
+                addWorldQuestLine(questId)
             end
+        end
+    end
+
+    -- Now pick up emissary quests, since they're not returned in GetQuestsForPlayerByMapID
+    for i = 1, #WL_WORLD_QUEST_EMISSARY_MAPS, 1 do
+        local rows = GetQuestBountyInfoForMapID(WL_WORLD_QUEST_EMISSARY_MAPS[i])
+        for rowIdx = 1, #rows, 1 do
+            addWorldQuestLine(rows[rowIdx].questID)
         end
     end
 
