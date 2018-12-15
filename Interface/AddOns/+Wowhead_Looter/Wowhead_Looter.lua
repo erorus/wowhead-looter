@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 8.0.1                     --
---    Updated: September 13, 2018      --
+--    Patch: 8.1.0                     --
+--    Updated: December 13, 2018       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 80000;
+local WL_VERSION = 80100;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -1789,7 +1789,9 @@ for i=1, wlLoreMasterNumCrit do
     local numCrit = GetAchievementNumCriteria(achID1);
     for j=1, numCrit do
         local _, _, _, _, _, _, _, achID2 = GetAchievementCriteriaInfo(achID1, j);
-        WL_LOREMASTER_CRITERIA[achID2] = true;
+        if GetAchievementNumCriteria(achID2) > 0 then
+            WL_LOREMASTER_CRITERIA[achID2] = true;
+        end
     end
 end
 function wlGetNumLoremasterQuestCompleted()
