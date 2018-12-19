@@ -447,7 +447,7 @@ local WL_DAILY_BUT_NOT_REALLY = {
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
 
 local WL_WORLD_QUEST_EMISSARY_MAPS = {
-    619, -- Broken Isles - pick up Legion emissaries
+    627, -- Dalaran - pick up Legion emissaries
     875, -- Zandalar - pick up BFA emissaries
 }
 
@@ -1785,20 +1785,18 @@ end
 local WL_LOREMASTER_CRITERIA = {};
 local wlLoreMasterNumCrit = GetAchievementNumCriteria(WL_LOREMASTER_ID);
 for i=1, wlLoreMasterNumCrit do
-    local _, _, _, _, _, _, _, achID1 = GetAchievementCriteriaInfo(WL_LOREMASTER_ID, i);
+    local _, _, _, _, _, _, _, achID1 = GetAchievementCriteriaInfo(WL_LOREMASTER_ID, i, true);
     local numCrit = GetAchievementNumCriteria(achID1);
     for j=1, numCrit do
-        local _, _, _, _, _, _, _, achID2 = GetAchievementCriteriaInfo(achID1, j);
-        if GetAchievementNumCriteria(achID2) > 0 then
-            WL_LOREMASTER_CRITERIA[achID2] = true;
-        end
+        local _, _, _, _, _, _, _, achID2 = GetAchievementCriteriaInfo(achID1, j, true);
+        WL_LOREMASTER_CRITERIA[achID2] = true;
     end
 end
 function wlGetNumLoremasterQuestCompleted()
     local nQuestCompleted = 0;
 
     for id, _ in pairs(WL_LOREMASTER_CRITERIA) do
-        nQuestCompleted = nQuestCompleted + (wlSelectOne(4, GetAchievementCriteriaInfo(id, 1)) or 0);
+        nQuestCompleted = nQuestCompleted + (wlSelectOne(4, GetAchievementCriteriaInfo(id, 1, true)) or 0);
     end
 
     return nQuestCompleted;
@@ -2131,17 +2129,21 @@ function wlSeenWorldQuests()
     local lines = {}
 
     local function addWorldQuestLine(questId)
-        wipe(lines)
-        lines[1] = questId
-        lines[2] = now + C_TaskQuest.GetQuestTimeLeftMinutes(questId) * 60
-        for j = 1, GetNumQuestLogRewards(questId) do
-            local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
-            if (itemId) then
-                tinsert(lines, numItems)
-                tinsert(lines, itemId)
+        local timeLeftMinutes = C_TaskQuest.GetQuestTimeLeftMinutes(questId);
+
+        if (timeLeftMinutes) then
+            wipe(lines)
+            lines[1] = questId
+            lines[2] = now + timeLeftMinutes * 60
+            for j = 1, GetNumQuestLogRewards(questId) do
+                local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
+                if (itemId) then
+                    tinsert(lines, numItems)
+                    tinsert(lines, itemId)
+                end
             end
+            results[#results + 1] = table.concat(lines, 'x')
         end
-        results[#results + 1] = table.concat(lines, 'x')
     end
 
     -- We're looking for the cosmic map. GetFallbackWorldMapID() should start us on Azeroth.
