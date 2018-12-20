@@ -1807,9 +1807,18 @@ end
 
 function wlGetQuestItemLinks(typeName)
 
-    local itemLinks = {}
+    local itemLinks = {};
+    local nRewards = 0;
 
-    for i = 1,6 do
+    if typeName == "reward" then
+        nRewards = GetNumQuestRewards();
+    elseif typeName == "choice" then
+        nRewards = GetNumQuestChoices();
+    else
+        return nil;
+    end
+
+    for i = 1,nRewards do
         local itemLink = GetQuestItemLink(typeName, i);
         if (itemLink) then
             table.insert(itemLinks, itemLink);
@@ -1819,11 +1828,32 @@ function wlGetQuestItemLinks(typeName)
     end
 
     if #itemLinks > 0 then
-        return itemLinks
+        return itemLinks;
     end
 
     return nil;
 end
+
+function wlGetQuestRewardCurrencies()
+
+    local nCurrencies = GetNumRewardCurrencies();
+
+    if nCurrencies == 0 then
+        return nil;
+    end
+
+    local currencies = {}
+
+    for i = 1,nCurrencies do
+        local id = GetQuestCurrencyID("reward", i);
+        local name, _, qty, _ = GetQuestCurrencyInfo("reward", i);
+        currencies[id] = qty;
+    end
+
+    return currencies;
+
+end
+
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
@@ -1904,6 +1934,7 @@ function wlEvent_QUEST_COMPLETE(self)
 
     wlTracker.quest.rewardItemLinks = wlGetQuestItemLinks("reward");
     wlTracker.quest.choiceItemLinks = wlGetQuestItemLinks("choice");
+    wlTracker.quest.rewardCurrencies = wlGetQuestRewardCurrencies();
     wlTracker.quest.complete = wlGetSourceText(GetRewardText());
 
     wlTracker.quest.time = wlGetTime();
@@ -1992,6 +2023,11 @@ function wlRegisterQuestReturn()
 
     wlEvent[wlId][wlN][eventId].rewardItemLinks = wlTracker.quest.rewardItemLinks;
     wlEvent[wlId][wlN][eventId].choiceItemLinks = wlTracker.quest.choiceItemLinks;
+    wlEvent[wlId][wlN][eventId].rewardCurrencies = wlTracker.quest.rewardCurrencies;
+    wlEvent[wlId][wlN][eventId].playerLevel = UnitLevel("player");
+    wlEvent[wlId][wlN][eventId].playerWarModeActive = UnitIsWarModeActive("player");
+    wlEvent[wlId][wlN][eventId].playerWarModeDesired = UnitIsWarModeDesired("player");
+    wlEvent[wlId][wlN][eventId].playerWarModePhased = UnitIsWarModePhased("player");
 
     wlTracker.quest.time = wlGetTime();
     wlTracker.quest.eventId = eventId;
@@ -2131,27 +2167,39 @@ function wlSeenWorldQuests()
 
     local now = GetServerTime()
 
+    -- All the world quest lines we'll save
     local results = {}
+
+    -- A lookup of quest IDs we've already seen, so we don't store duplicates
+    local seenAlready = {}
 
     -- Build each line by concatenating values in this table
     local lines = {}
 
     local function addWorldQuestLine(questId)
-        local timeLeftMinutes = C_TaskQuest.GetQuestTimeLeftMinutes(questId);
-
-        if (timeLeftMinutes) then
-            wipe(lines)
-            lines[1] = questId
-            lines[2] = now + timeLeftMinutes * 60
-            for j = 1, GetNumQuestLogRewards(questId) do
-                local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
-                if (itemId) then
-                    tinsert(lines, numItems)
-                    tinsert(lines, itemId)
-                end
-            end
-            results[#results + 1] = table.concat(lines, 'x')
+        if seenAlready[questId] then
+            return
         end
+        seenAlready[questId] = true
+
+        local timeLeftMinutes = C_TaskQuest.GetQuestTimeLeftMinutes(questId);
+        -- This function sometimes returns nil for no good reason, so let's not break because of that
+        -- This function returns 0 for non-world quests (which we may pick up since we get all quests shown on a map)
+        if not timeLeftMinutes or timeLeftMinutes < 10 then
+            return
+        end
+
+        wipe(lines)
+        lines[1] = questId
+        lines[2] = now + timeLeftMinutes * 60
+        for j = 1, GetNumQuestLogRewards(questId) do
+            local name, texture, numItems, quality, isUsable, itemId = GetQuestLogRewardInfo(j, questId)
+            if (itemId) then
+                tinsert(lines, numItems)
+                tinsert(lines, itemId)
+            end
+        end
+        results[#results + 1] = table.concat(lines, 'x')
     end
 
     -- We're looking for the cosmic map. GetFallbackWorldMapID() should start us on Azeroth.
@@ -2168,19 +2216,23 @@ function wlSeenWorldQuests()
     end
 
     -- The children of the root map are the worlds: Azeroth, Outland, Draenor
-    local worldMaps = C_Map.GetMapChildrenInfo(rootMapId)
-    for i = 1, #worldMaps, 1 do
-        -- At the world level, we can query for all the world quests under it
-        local rows = C_TaskQuest.GetQuestsForPlayerByMapID(worldMaps[i].mapID)
-        for rowIdx = 1, #rows, 1 do
-            local questId = rows[rowIdx].questId
+    -- For the most part, all world quests are returned under each world map.
+    local checkMaps = C_Map.GetMapChildrenInfo(rootMapId)
 
-            -- We will pick up some optional quests that have icons on the map. Make sure this is a world quest.
-            -- Sometimes this just returns nil when the quest data isn't cached. We should pick it up next pass.
-            local _, _, worldQuestType = GetQuestTagInfo(questId)
-            if worldQuestType ~= nil then
-                addWorldQuestLine(questId)
-            end
+    -- Argus is weird and world quests under it don't show up when you query Azeroth. Not sure why. :(
+    local argusMaps = C_Map.GetMapChildrenInfo(905)
+    for i = 1, #argusMaps, 1 do
+        -- Look for type Zone or bigger
+        if argusMaps[i].mapType <= 3 then
+            checkMaps[#checkMaps + 1] = argusMaps[i]
+        end
+    end
+
+    -- Query for all the world quests under each map
+    for i = 1, #checkMaps, 1 do
+        local rows = C_TaskQuest.GetQuestsForPlayerByMapID(checkMaps[i].mapID)
+        for rowIdx = 1, #rows, 1 do
+            addWorldQuestLine(rows[rowIdx].questId)
         end
     end
 
