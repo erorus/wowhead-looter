@@ -726,6 +726,7 @@ end
 function wlEvent_ADDON_LOADED(self, name)
     if name == "+Wowhead_Looter" then
         wlTimers.autoCollect = wlGetTime() + 60000; -- 60 seconds timeout
+        wlTimers.worldQuestUpdate = wlGetTime() + 30000; -- 30 seconds timeout
     end
 end
 
@@ -2119,7 +2120,14 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlSeenWorldQuests()
-    if not C_TaskQuest.GetQuestTimeLeftMinutes then return end
+    local function queueNextCheck(minutes)
+        wlTimers.worldQuestUpdate = wlGetTime() + minutes * 60 * 1000; -- recheck after a few minutes
+    end
+
+    if UnitAffectingCombat("player") or InCombatLockdown() then
+        queueNextCheck(1)
+        return
+    end
 
     local now = GetServerTime()
 
@@ -2168,6 +2176,7 @@ function wlSeenWorldQuests()
             local questId = rows[rowIdx].questId
 
             -- We will pick up some optional quests that have icons on the map. Make sure this is a world quest.
+            -- Sometimes this just returns nil when the quest data isn't cached. We should pick it up next pass.
             local _, _, worldQuestType = GetQuestTagInfo(questId)
             if worldQuestType ~= nil then
                 addWorldQuestLine(questId)
@@ -2185,6 +2194,8 @@ function wlSeenWorldQuests()
 
     if #results > 0 then
         wlWorldQuests = wlGetPlayerRealmId() .. '=' .. table.concat(results,',')
+
+        queueNextCheck(5)
     end
 end
 
@@ -3069,7 +3080,6 @@ function wlCollect(userInitiated)
     wlScanAchievements(userInitiated)
     wlScanFollowers()
     wlScanArchaeology()
-    wlSeenWorldQuests()
     wlSeenIslandExpeditions()
     wlGetBuildings();
     wlGetTime();
@@ -4478,6 +4488,9 @@ function wl_OnUpdate(self, elapsed)
 
                 elseif name == "itemDurability" then
                     wlGetItemDurability();
+
+                elseif name == "worldQuestUpdate" then
+                    wlSeenWorldQuests();
 
                 elseif name == "printCollected" then
                     if wlMsgCollected ~= "" then
