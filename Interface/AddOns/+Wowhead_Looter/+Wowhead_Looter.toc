@@ -1,6 +1,6 @@
 ## Interface: 80100
 ## Title: Wowhead Looter
-## Notes: Gathers data for Wowhead while you play.
+## Notes: Gathers data for Wowhead while you play. Version 80100.
 ## Author: mystadio
 ## eMail: feedback@wowhead.com
 ## URL: https://www.wowhead.com/
