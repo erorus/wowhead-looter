@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.1.0                     --
---    Updated: December 13, 2018       --
+--    Updated: February 11, 2019       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -19,7 +19,8 @@ local WL_ADDONNAME, WL_ADDONTABLE = ...
 -- SavedVariables
 wlTime = GetServerTime();
 wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = 0, 0, "", "", {};
-wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
+wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit = {}, {}, {}, {}, {}, {};
+wlItemDurability, wlGarrisonMissions, wlItemBonuses, wlContributionQuests = {}, {}, {}, {};
 wlDailies, wlWorldQuests = "", "";
 wlRegionBuildings = {};
 
@@ -1916,6 +1917,7 @@ function wlEvent_QUEST_PROGRESS(self)
             -- Check for warfront contribution tag
             if tagId == 153 then
                 wlSeenDaily(wlTracker.quest.id)
+                wlSeenContributionQuest()
             end
         end
     end
@@ -2120,7 +2122,8 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlSeenDaily(questId)
-    local resetTime = floor((GetServerTime() + GetQuestResetTime()) / 600 + 0.5) * 600 -- timestamp, rounded to nearest 10 minute interval
+    -- timestamp, rounded to nearest 10 minute interval
+    local resetTime = floor((GetServerTime() + GetQuestResetTime()) / 600 + 0.5) * 600
 
     local today = ''..resetTime..','
     local toAdd = questId..','
@@ -2263,6 +2266,58 @@ function wlSeenIslandExpeditions()
             wlSeenDaily('t'..info.portraitTextureKitID)
         end
     end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+--[[
+-- When a quest progress window is opened, we call this function to log the quest requirements. Used for Warfront
+-- Contribution quests which are unable to be datamined until live and can change their required items and quantities.
+ ]]
+function wlSeenContributionQuest()
+    local questId = GetQuestID()
+
+    if (questId == nil or questId == 0) then
+        return
+    end
+
+    -- timestamp, rounded to nearest 10 minute interval
+    local resetTime = floor((GetServerTime() + GetQuestResetTime()) / 600 + 0.5) * 600
+
+    local realmKey = 'r' .. wlGetPlayerRealmId()
+    if wlContributionQuests[realmKey] == nil or wlContributionQuests[realmKey][1] ~= resetTime then
+        wlContributionQuests[realmKey] = {resetTime, {}}
+    end
+
+    local questKey = 'q' .. questId
+    if wlContributionQuests[realmKey][2][questKey] ~= nil then
+        return
+    end
+
+    local requirements = {}
+
+    local money = GetQuestLogRequiredMoney()
+    if (money and money ~= 0) then
+        requirements[#requirements + 1] = {'money', money, 1}
+    end
+
+    local reqCount = GetNumQuestItems()
+    for i = 1, reqCount do
+        local _, _, count = GetQuestItemInfo('required', i)
+        local link = GetQuestItemLink('required', i)
+
+        local itemId = wlParseItemLink(link)
+        if itemId and itemId ~= 0 then
+            requirements[#requirements + 1] = {'item', itemId, count}
+        else
+            local currencyId = wlParseCurrencyLink(link)
+            if currencyId and currencyId ~= 0 then
+                requirements[#requirements + 1] = {'currency', currencyId, count}
+            end
+        end
+    end
+
+    wlContributionQuests[realmKey][2][questKey] = requirements
 end
 
 ----------------------------
@@ -5489,7 +5544,8 @@ end
 
 function wlReset()
     wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList = WL_VERSION, 0, "", "", {};
-    wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlItemBonuses = {}, {}, {}, {}, {}, {}, {}, {}, {};
+    wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit = {}, {}, {}, {}, {}, {};
+    wlItemDurability, wlGarrisonMissions, wlItemBonuses, wlContributionQuests = {}, {}, {}, {};
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
