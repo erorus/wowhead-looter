@@ -1886,6 +1886,20 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+--[[
+-- Event handler for QUEST_ITEM_UPDATE, which fires after the game client gathered quest requirement/reward item info.
+ ]]
+function wlEvent_QUEST_ITEM_UPDATE(self)
+    local tagId = GetQuestTagInfo(GetQuestID())
+
+    -- Check for warfront contribution tag
+    if tagId == 153 then
+        wlSeenContributionQuest()
+    end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
 function wlEvent_QUEST_ACCEPTED(self, _, questId)
     if (questId) then
         -- only way to pick up apexis daily quests from table, when they are auto-accepted
@@ -1906,19 +1920,17 @@ function wlEvent_QUEST_PROGRESS(self)
     wlTracker.quest.time = wlGetTime();
     wlTracker.quest.action = "progress";
 
-    if QuestIsDaily() then
+    local tagId = GetQuestTagInfo(wlTracker.quest.id)
+
+    -- Check for warfront contribution tag
+    if tagId == 153 then
+        wlSeenDaily(wlTracker.quest.id)
+        wlSeenContributionQuest()
+    elseif QuestIsDaily() then
         -- we want to pick up garrison profession trader dailies, but they don't fire quest_detail
         -- also, we don't want in-progress quests from other days to get picked up, so only prof dailies can trigger "seen" on progress event
         if tContains(WL_DAILY_PROFESSION_TRADER_QUESTS, wlTracker.quest.id) then
             wlSeenDaily(wlTracker.quest.id)
-        else
-            local tagId = GetQuestTagInfo(wlTracker.quest.id)
-
-            -- Check for warfront contribution tag
-            if tagId == 153 then
-                wlSeenDaily(wlTracker.quest.id)
-                wlSeenContributionQuest()
-            end
         end
     end
 
@@ -2290,13 +2302,9 @@ function wlSeenContributionQuest()
     end
 
     local questKey = 'q' .. questId
-    if wlContributionQuests[realmKey][2][questKey] ~= nil then
-        return
-    end
-
     local requirements = {}
 
-    local money = GetQuestLogRequiredMoney()
+    local money = GetQuestMoneyToGet()
     if (money and money ~= 0) then
         requirements[#requirements + 1] = {'money', money, 1}
     end
@@ -2309,11 +2317,15 @@ function wlSeenContributionQuest()
         local itemId = wlParseItemLink(link)
         if itemId and itemId ~= 0 then
             requirements[#requirements + 1] = {'item', itemId, count}
-        else
-            local currencyId = wlParseCurrencyLink(link)
-            if currencyId and currencyId ~= 0 then
-                requirements[#requirements + 1] = {'currency', currencyId, count}
-            end
+        end
+    end
+
+    local reqCount = GetNumQuestCurrencies()
+    for i = 1, reqCount do
+        local _, _, count = GetQuestCurrencyInfo('required', i)
+        local currencyId = GetQuestCurrencyID('required', i)
+        if currencyId and currencyId ~= 0 then
+            requirements[#requirements + 1] = {'currency', currencyId, count}
         end
     end
 
@@ -4122,6 +4134,7 @@ local wlEvents = {
 
     -- quest
     QUEST_DETAIL = wlEvent_QUEST_DETAIL,
+    QUEST_ITEM_UPDATE = wlEvent_QUEST_ITEM_UPDATE,
     QUEST_ACCEPTED = wlEvent_QUEST_ACCEPTED,
     QUEST_PROGRESS = wlEvent_QUEST_PROGRESS,
     QUEST_COMPLETE = wlEvent_QUEST_COMPLETE,
