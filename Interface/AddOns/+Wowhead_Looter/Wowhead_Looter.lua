@@ -2298,7 +2298,7 @@ function wlSeenContributionQuest()
 
     local realmKey = 'r' .. wlGetPlayerRealmId()
     if wlContributionQuests[realmKey] == nil or wlContributionQuests[realmKey][1] ~= resetTime then
-        wlContributionQuests[realmKey] = {resetTime, {}}
+        wlContributionQuests[realmKey] = {resetTime, {}, unpack({UnitFactionGroup("player")}, 1, 1)}
     end
 
     local questKey = 'q' .. questId
