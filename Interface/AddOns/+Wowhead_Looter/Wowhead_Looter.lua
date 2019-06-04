@@ -2106,7 +2106,7 @@ function wlEvent_COMBAT_TEXT_UPDATE(self, messageType, param1, param2)
             repMod = repMod + 0.2;
         end
         for buffName, factMod in pairs(WL_REP_MODS) do
-            if UnitBuff("player", buffName) then
+            if AuraUtil.FindAuraByName(buffName, "player") then
                 if param1 == factMod[1] or factMod == nil then
                     repMod = repMod + factMod[2];
                 end
@@ -3311,7 +3311,7 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                 end
                 
                 -- check if the player has wintergrasp buff which gives honor WoTlk Dungeons
-                local buffName = UnitBuff("player", GetSpellInfo(57940));
+                local buffName = AuraUtil.FindAuraByName(GetSpellInfo(57940), "player");
                 if buffName and currencyId == 392 then
                     return;
                 end
@@ -3319,11 +3319,11 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                 if currencyId == 396 then
                     local valorMod = 1;
                     -- check if the player has the Valor of the Ancients buff (+50%)
-                    if UnitBuff("player", GetSpellInfo(130609)) then
+                    if AuraUtil.FindAuraByName(GetSpellInfo(130609), "player") then
                         valorMod = valorMod + 0.5;
                     end
                     -- check if the player has the Heart of the Valorous buff (+100%)
-                    if UnitBuff("player", GetSpellInfo(161795)) then
+                    if AuraUtil.FindAuraByName(GetSpellInfo(161795), "player") then
                         valorMod = valorMod + 1.0;
                     end
                     currencyAmount = floor((currencyAmount/valorMod) + 0.5);
