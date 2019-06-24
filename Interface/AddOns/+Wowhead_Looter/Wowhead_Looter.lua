@@ -2269,13 +2269,23 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlSeenIslandExpeditions()
+
+    -- BFA 8.2 GetTextureWithStateVisualizationInfo renamed to GetTextureAndTextVisualizationInfo
+    local textureFunc = C_UIWidgetManager.GetTextureWithStateVisualizationInfo or C_UIWidgetManager.GetTextureAndTextVisualizationInfo;
+    if (not textureFunc) then
+        return;
+    end
+
     -- found in Blizzard_IslandsQueueUI.lua
     local ISLANDS_QUEUE_WIDGET_SET_ID = 127;
 
     for i,widget in ipairs(C_UIWidgetManager.GetAllWidgetsBySetID(ISLANDS_QUEUE_WIDGET_SET_ID)) do
-        local info = C_UIWidgetManager.GetTextureWithStateVisualizationInfo(widget.widgetID)
-        if info.shownState ~= 0 then
-            wlSeenDaily('t'..info.portraitTextureKitID)
+        local info = textureFunc(widget.widgetID);
+        if info and info.shownState ~= 0 then
+            local textureId = info.portraitTextureKitID or info.textureKitID;
+            if (textureId) then
+                wlSeenDaily('t'..textureId);
+            end
         end
     end
 end
