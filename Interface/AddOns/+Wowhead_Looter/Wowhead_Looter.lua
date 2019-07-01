@@ -2245,6 +2245,10 @@ function wlSeenWorldQuests()
         end
     end
 
+    -- These zones are weird, too. Figures.
+    checkMaps[#checkMaps + 1] = C_Map.GetMapInfo(1355); -- Nazjatar
+    checkMaps[#checkMaps + 1] = C_Map.GetMapInfo(1462); -- Mechagon
+
     -- Query for all the world quests under each map
     for i = 1, #checkMaps, 1 do
         local rows = C_TaskQuest.GetQuestsForPlayerByMapID(checkMaps[i].mapID)
