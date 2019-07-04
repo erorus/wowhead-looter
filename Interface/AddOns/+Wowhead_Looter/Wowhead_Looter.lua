@@ -11,7 +11,7 @@
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 80100;
+local WL_VERSION = 80200;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
