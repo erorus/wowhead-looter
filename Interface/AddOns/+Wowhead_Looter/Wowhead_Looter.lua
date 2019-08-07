@@ -416,6 +416,15 @@ local WL_SPECIAL_CONTAINERS = {
     [128327] = true, -- small-pouch-of-coins
     [147384] = true,
     [147446] = true, -- brawler's footlocker
+
+    -- BFA 8.2
+    [170061] = true, -- Rustbolt Supplies
+    [169939] = true, -- Ankoan Supplies
+    [169940] = true, -- Unshackled Supplies
+    [168395] = true, -- Irradiated box of assorted parts
+    [168094] = true, -- Faintly humming sea stones
+    [168266] = true, -- Strange recycling requisition
+    [168264] = true, -- Recycling requisition
 };
 
 -- garrison trading post NPCs, for today in draenor tracking
