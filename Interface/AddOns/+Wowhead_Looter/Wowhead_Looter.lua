@@ -188,6 +188,14 @@ local WL_LOOT_TOAST_BAGS = {
     
 };
 
+-- Openable loot with toast but no spell
+local WL_LOOT_TOAST_NOSPELL =
+{
+    [170061] = true, -- Rustbolt Supplies
+    [169939] = true, -- Ankoan Supplies
+    [169940] = true, -- Unshackled Supplies
+};
+
 local WL_REP_MODS = {
     [GetSpellInfo(61849)] = {nil, 0.1},
     [GetSpellInfo(24705)] = {nil, 0.1},
@@ -2629,7 +2637,12 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         return;
     end
     
-    if wlLootToastSourceId then
+    if wlLootToastSourceId or
+        (wlTracker.spell and
+         wlTracker.spell.action == "Opening" and
+         wlTracker.spell.kind == "item" and
+         WL_LOOT_TOAST_NOSPELL[wlTracker.spell.id]) then
+
         if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
             return;
         end
@@ -2656,7 +2669,10 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         else
             wlTracker.spell.action = "Opening";
             wlTracker.spell.kind = "item";
-            wlTracker.spell.id = wlLootToastSourceId;
+            wlTracker.spell.lootToastSourceId = wlLootToastSourceId;
+            if (wlLootToastSourceId) then
+                wlTracker.spell.id = wlLootToastSourceId;
+            end
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
             wlEvent[wlId][wlN][eventId].what = "loot";
             wlTableCopy(wlEvent[wlId][wlN][eventId], wlTracker.spell);
