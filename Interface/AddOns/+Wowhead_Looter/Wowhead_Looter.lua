@@ -641,17 +641,14 @@ function wlEvent_PLAYER_LOGIN(self)
 
     wlId = wlConcat(wlSelectOne(1, UnitName("player")), GetRealmName());
     
-    -- Only add the data to the wlProfile if the character is level 10 or above
-    if UnitLevel("player") > 10 then
-        wlUpdateVariable(wlProfile, wlId, "init", {
-            faction = UnitFactionGroup("player"),
-            race = select(2, UnitRace("player")),
-            class = select(2, UnitClass("player")),
-            sex = UnitSex("player"),
-            n = 0,
-        });
-        wlN = wlUpdateVariable(wlProfile, wlId, "n", "add", 1);
-    end
+    wlUpdateVariable(wlProfile, wlId, "init", {
+        faction = UnitFactionGroup("player"),
+        race = select(2, UnitRace("player")),
+        class = select(2, UnitClass("player")),
+        sex = UnitSex("player"),
+        n = 0,
+    });
+    wlN = wlUpdateVariable(wlProfile, wlId, "n", "add", 1);
     
     wlUpdateVariable(wlEvent, wlId, wlN, wlGetNextEventId(), "set", {
         what = "login",
