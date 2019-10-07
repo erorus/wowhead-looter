@@ -2266,16 +2266,20 @@ function wlSeenWorldQuests()
     -- Query for all the world quests under each map
     for i = 1, #checkMaps, 1 do
         local rows = C_TaskQuest.GetQuestsForPlayerByMapID(checkMaps[i].mapID)
-        for rowIdx = 1, #rows, 1 do
-            addWorldQuestLine(rows[rowIdx].questId)
+        if rows then
+            for rowIdx = 1, #rows, 1 do
+                addWorldQuestLine(rows[rowIdx].questId)
+            end
         end
     end
 
     -- Now pick up emissary quests, since they're not returned in GetQuestsForPlayerByMapID
     for i = 1, #WL_WORLD_QUEST_EMISSARY_MAPS, 1 do
         local rows = GetQuestBountyInfoForMapID(WL_WORLD_QUEST_EMISSARY_MAPS[i])
-        for rowIdx = 1, #rows, 1 do
-            addWorldQuestLine(rows[rowIdx].questID)
+        if rows then
+            for rowIdx = 1, #rows, 1 do
+                addWorldQuestLine(rows[rowIdx].questID)
+            end
         end
     end
 
