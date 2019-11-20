@@ -1318,9 +1318,10 @@ function wlEvent_TRAINER_SHOW(self)
         local spellName, spellSubText, _, _, reqLevel = GetTrainerServiceInfo(i);
 
         if spellName then
+            wlGameTooltip:SetOwner(UIParent, 'ANCHOR_NONE');
             wlGameTooltip:ClearLines();
             wlGameTooltip:SetTrainerService(i);
-            spellId = select(3, wlGameTooltip:GetSpell());
+            spellId = select(2, wlGameTooltip:GetSpell());
 
             if isTradeSkill then
                 skill, skillRank = GetTrainerServiceSkillReq(i);
