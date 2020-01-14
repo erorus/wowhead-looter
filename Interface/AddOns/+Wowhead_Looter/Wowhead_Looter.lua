@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 8.2.5                     --
---    Updated: September 24, 2019      --
+--    Patch: 8.3.0                     --
+--    Updated: January 14, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 80205;
+local WL_VERSION = 80300;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -5575,7 +5575,9 @@ function wlHook()
         end
     end);
     
-    hooksecurefunc("PlaceAuctionBid", wlPlaceAuctionBid);
+    if (PlaceAuctionBid) then
+        hooksecurefunc("PlaceAuctionBid", wlPlaceAuctionBid);
+    end
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--

@@ -1,10 +1,10 @@
-## Interface: 80205
+## Interface: 80300
 ## Title: Wowhead Looter
-## Notes: Gathers data for Wowhead while you play. Version 80100.
+## Notes: Gathers data for Wowhead while you play. Version 80300.
 ## Author: mystadio
 ## eMail: feedback@wowhead.com
 ## URL: https://www.wowhead.com/
-## Version: 80205
+## Version: 80300
 ## LoadOnDemand: 0
 ## DefaultState: enabled
 ## SavedVariables: wlTime, wlRegionBuildings, wlVersion, wlUploaded, wlStats, wlExportData, wlRealmList, wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit, wlItemDurability, wlGarrisonMissions, wlBattlePetStats, wlItemBonuses, wlDailies, wlWorldQuests, wlContributionQuests
