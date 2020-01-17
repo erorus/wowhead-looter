@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: January 14, 2020        --
+--    Updated: January 15, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -194,6 +194,41 @@ local WL_LOOT_TOAST_NOSPELL =
     [170061] = true, -- Rustbolt Supplies
     [169939] = true, -- Ankoan Supplies
     [169940] = true, -- Unshackled Supplies
+
+    -- 8.3
+    [173372] = true, -- Cache of the Black Empire
+    [173734] = true, -- Mysterious Crate
+    [173949] = true, -- Dread Chain Salvage
+    [173950] = true, -- Crestfall Salvage
+    [173983] = true, -- Vulpera Satchel of Salvage
+    [173987] = true, -- Elemental Salvage
+    [173988] = true, -- Havenswood Salvage
+    [173989] = true, -- Jorundall Salvage
+    [173990] = true, -- Molten Cay Salvage
+    [173991] = true, -- Rotting Mire Salvage
+    [173992] = true, -- Skittering Hollow Salvage
+    [173993] = true, -- Snowblossom Salvage
+    [173994] = true, -- Un'gol Ruins Salvage
+    [173995] = true, -- Venture Co. 'Salvage'
+    [173996] = true, -- Verdant Wilds Salvage
+    [173997] = true, -- Whispering Reef Salvage
+    [174039] = true, -- Crate of Cursed Mementos
+    [174181] = true, -- Bag of Herbs
+    [174182] = true, -- Bag of Ore
+    [174183] = true, -- Bag of Leather
+    [174184] = true, -- Bag of Cloth
+    [174194] = true, -- Bag of Enchanting
+    [174195] = true, -- Bag of Gems
+    [174358] = true, -- Unopened Blackrock Supply Crate
+    [174483] = true, -- Rajani Supplies
+    [174484] = true, -- Uldum Accord Supplies
+    [174529] = true, -- Crate of Coalescing Visions
+    [174642] = true, -- Corrupted Ny'alotha Raid Item
+    [174958] = true, -- Cache of the Fallen Mogu
+    [174959] = true, -- Cache of the Mantid Swarm
+    [174960] = true, -- Cache of the Aqir Swarm
+    [174961] = true, -- Cache of the Amathet
+
 };
 
 local WL_REP_MODS = {
