@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: January 15, 2020        --
+--    Updated: January 19, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2944,7 +2944,9 @@ function wlEvent_LOOT_OPENED(self)
             -- SendAddonMessage does not allow to send nil or "" as msg.
             -- Only send it if we got a valid 'guid'. This should not affect any data.
             if guid then
-                SendAddonMessage("WL_LOOT_COOLDOWN", guid, IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
+                SendAddonMessage("WL_LOOT_COOLDOWN", guid,
+                        (wlIsInBattleground() and "BATTLEGROUND") or
+                        IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
             end
         else
             wlEvent_CHAT_MSG_ADDON(self, "WL_LOOT_COOLDOWN", guid, "RAID", UnitName("player"));
@@ -3067,7 +3069,9 @@ function wlEvent_LOOT_OPENED(self)
                 do break end;
             end
             if wlIsInParty() then
-                SendAddonMessage("WL_LOOT_COOLDOWN", guidMsg, IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
+                SendAddonMessage("WL_LOOT_COOLDOWN", guidMsg,
+                        (wlIsInBattleground() and "BATTLEGROUND") or
+                        IsPartyLFG() and "INSTANCE_CHAT" or "RAID");
             else
                 wlEvent_CHAT_MSG_ADDON(self, "WL_LOOT_COOLDOWN", guidMsg, "RAID", UnitName("player"));
             end
@@ -3217,6 +3221,10 @@ end
 
 function wlIsInParty()
     return GetNumSubgroupMembers() > 0 or GetNumGroupMembers() > 1;
+end
+
+function wlIsInBattleground()
+    return UnitInBattleground("player") ~= nil;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
