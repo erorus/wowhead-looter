@@ -383,7 +383,7 @@
     </Size>
 
     <Anchors>
-        <Anchor point="BOTTOMLEFT" relativeTo="WorldMapFrame" relativePoint="BOTTOMLEFT">
+        <Anchor point="BOTTOM" relativeTo="WorldMapFrame" relativePoint="BOTTOM">
             <Offset>
                 <AbsDimension x="2" y="0"/>
             </Offset>
