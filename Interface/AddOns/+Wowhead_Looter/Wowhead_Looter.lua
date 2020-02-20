@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: January 24, 2020        --
+--    Updated: February 20, 2020       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2727,8 +2727,9 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         
         local typeId = nil;
         local currencyId = nil;
+        local numBonus = 0;
         if typeIdentifier == "item" then
-            typeId = wlParseItemLink(itemLink);
+            typeId, _, _, _, _, _, _, _, _, _, _, numBonus = wlParseItemLink(itemLink);
         elseif typeIdentifier == "money" then
             typeId = "coin";
         elseif typeIdentifier == "currency" then
@@ -2741,7 +2742,7 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         if typeId == "currency" then
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity, currencyId));
         else
-            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity));
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity, 0, numBonus > 0 and itemLink or nil));
         end
         
     end
@@ -2780,6 +2781,7 @@ function wlBagItemOnUse(link, bag, slot)
                 local text = _G["wlGameTooltipTextLeft"..i]:GetText();
                 if text == ITEM_OPENABLE then
                     wlClearTracker("spell");
+                    wlCurrentLootToastEventId = nil;
                     wlTrackerClearedTime = now;
                     wlTracker.spell.time = now;
                     wlTracker.spell.event = "SUCCEEDED";
@@ -2993,10 +2995,12 @@ function wlEvent_LOOT_OPENED(self)
         local slotType = GetLootSlotType(slot);
         if slotType ~= LOOT_SLOT_NONE then
             local typeId = nil;
+            local numBonus = 0;
             local currencyId = nil;
+            local itemLink = GetLootSlotLink(slot);
             
             if slotType == LOOT_SLOT_ITEM then 
-                typeId = wlParseItemLink(GetLootSlotLink(slot));
+                typeId, _, _, _, _, _, _, _, _, _, _, numBonus = wlParseItemLink(itemLink);
                 -- for sourceIndex = 1, #lootSources, 2 do
                 --     print(("%s looted %d of %s"):format(wlParseGUID(lootSources[sourceIndex]), lootSources[sourceIndex + 1], GetItemInfo(itemId)));
                 -- end
@@ -3025,6 +3029,7 @@ function wlEvent_LOOT_OPENED(self)
                         targetLoots[typeId][1] = (targetLoots[typeId][1] or 0) + qty;
                         targetLoots[typeId][2] = (targetLoots[typeId][2] or 0) + wlSelectOne(3, GetLootSlotInfo(slot));
                         targetLoots[typeId][3] = (currencyId or 0);
+                        targetLoots[typeId][4] = numBonus > 0 and itemLink or nil;
                         if wlTracker.spell.kind == "object" then
                             local guidId, guidKind = wlParseGUID(aoeGUID);
                             if (guidKind == "object") then
@@ -3040,6 +3045,7 @@ function wlEvent_LOOT_OPENED(self)
                         end
                         aoeNpcs[aoeGUID][typeId][1] = (aoeNpcs[aoeGUID][typeId][1] or 0) + qty;
                         aoeNpcs[aoeGUID][typeId][2] = (currencyId or 0);
+                        aoeNpcs[aoeGUID][typeId][3] = numBonus > 0 and itemLink or nil;
                     end
                 end
             end
@@ -3060,7 +3066,7 @@ function wlEvent_LOOT_OPENED(self)
         if currencyId > 0 then
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", i, "set", wlConcat("currency", qty, currencyId));
         else 
-            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", i, "set", wlConcat(typeId, qty));
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", i, "set", wlConcat(typeId, qty, 0, qtyInfo[4]));
         end
         i = i + 1;
     end
@@ -3101,7 +3107,7 @@ function wlEvent_LOOT_OPENED(self)
                 if qty[2] > 0 then -- Currency 
                     wlUpdateVariable(wlEvent, wlId, wlN, aoeEventId, "drop", aoeCounter, "set", wlConcat("currency", qty[1], qty[2]));
                 else -- Money or Item
-                    wlUpdateVariable(wlEvent, wlId, wlN, aoeEventId, "drop", aoeCounter, "set", wlConcat(typeId, qty[1]));
+                    wlUpdateVariable(wlEvent, wlId, wlN, aoeEventId, "drop", aoeCounter, "set", wlConcat(typeId, qty[1], 0, qty[3]));
                 end
                 aoeCounter = aoeCounter + 1;
             end
@@ -3186,7 +3192,7 @@ function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName)
     if not found then
         qty, found, _, link = 1, msg:find(LOOT_ITEM_PUSHED_SELF);
     end
-    local itemID = wlParseItemLink(link);
+    local itemID, _, _, _, _, _, _, _, _, _, _, numBonus = wlParseItemLink(link);
     qty = tonumber(qty);
 
     if valid and found and itemID and itemID > 0 and qty and qty > 0 then
@@ -3208,7 +3214,7 @@ function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName)
             wlEvent[wlId][wlN][eventId].flags = 0;
         end
         wlEvent[wlId][wlN][eventId]["drop"] = wlEvent[wlId][wlN][eventId]["drop"] or {};
-        wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(itemID, qty));
+        wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(itemID, qty, 0, numBonus > 0 and link or nil));
     else
         wlClearTracker("spell");
         wlTrackerClearedTime = now;
@@ -4978,12 +4984,21 @@ end
 -- |cffffff00|Hquest:11506:-1|h[Spirits of Auchindoun]|h|r
 -- (color) : (id) : (name)
 local WL_CURRENCYLINK = "|c(%x+)|Hcurrency:(%d+)|h%[(.+)%]|h|r";
+local WL_CURRENCYLINK2 = "|c(%x+)|Hcurrency:(%d+):%d+|h%[(.+)%]|h|r";
 function wlParseCurrencyLink(link)
     if link then
        for color, id, name in link:gmatch(WL_CURRENCYLINK) do
-            return tonumber(id);
-        end
+            if id then
+                return tonumber(id);
+            end
+       end
+       for color, id, name in link:gmatch(WL_CURRENCYLINK2) do
+            if id then
+                return tonumber(id);
+            end
+       end
     end
+    return nil;
 end
 
 --    (color) : (id) : (enchant) : (1st socket) : (2nd socket) : (3rd socket) : (4th socket) : (subid) : (guid) : (playerLevel) : (specId) : (upgradeType) : (bonusContext) : (numBonus) (: ...bonusIds...) : (upgradeId) : (name)
@@ -5024,11 +5039,11 @@ function wlParseItemLink(link)
                 end
             end
 
-            return id, subId, tonumber(enchant) or 0, tonumber(socket1) or 0, tonumber(socket2) or 0, tonumber(socket3) or 0, tonumber(socket4) or 0, name, color, guid, tonumber(pLevel) or 0;
+            return id, subId, tonumber(enchant) or 0, tonumber(socket1) or 0, tonumber(socket2) or 0, tonumber(socket3) or 0, tonumber(socket4) or 0, name, color, guid, tonumber(pLevel) or 0, numBonus;
         end
     end
 
-    return 0, 0, 0, 0, 0, 0, 0, "", "", 0, 0;
+    return 0, 0, 0, 0, 0, 0, 0, "", "", 0, 0, 0;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
