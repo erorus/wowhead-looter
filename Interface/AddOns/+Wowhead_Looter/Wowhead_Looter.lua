@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: February 20, 2020       --
+--    Updated: February 25, 2020       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2781,7 +2781,6 @@ function wlBagItemOnUse(link, bag, slot)
                 local text = _G["wlGameTooltipTextLeft"..i]:GetText();
                 if text == ITEM_OPENABLE then
                     wlClearTracker("spell");
-                    wlCurrentLootToastEventId = nil;
                     wlTrackerClearedTime = now;
                     wlTracker.spell.time = now;
                     wlTracker.spell.event = "SUCCEEDED";
@@ -2838,6 +2837,11 @@ end
 
 function wlEvent_LOOT_CLOSED(self)
     wlClearTracker("spell");
+end
+
+
+function wlEvent_BAG_UPDATE_DELAYED()
+    wlCurrentLootToastEventId = nil;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4209,6 +4213,7 @@ local wlEvents = {
     UNIT_SPELLCAST_INTERRUPTED = wlEvent_UNIT_SPELLCAST_FAILED,
     UNIT_SPELLCAST_FAILED_QUIET = wlEvent_UNIT_SPELLCAST_FAILED,
     ITEM_LOCK_CHANGED = wlEvent_ITEM_LOCK_CHANGED,
+    BAG_UPDATE_DELAYED = wlEvent_BAG_UPDATE_DELAYED,
 
     -- chat loot blocking
     GARRISON_MISSION_NPC_CLOSED = wlEvent_UnBlockChatLoot,
