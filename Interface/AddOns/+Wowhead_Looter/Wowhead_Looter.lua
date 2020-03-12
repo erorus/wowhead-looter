@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: February 25, 2020       --
+--    Updated: March 10, 2020          --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -3520,7 +3520,7 @@ function wlScanArtifacts()
     for raceIndex=1, GetNumArchaeologyRaces() do
         if scanTable[raceIndex] then
             for artifactIndex=1, GetNumArtifactsByRace(raceIndex) do
-                local name, _, _, _, _, _, _, _, completionCount = GetArtifactInfoByRace(raceIndex, artifactIndex);
+                local name, _, _, _, _, _, _, _, _, completionCount = GetArtifactInfoByRace(raceIndex, artifactIndex);
                 if name and scanTable[raceIndex][name] and completionCount > 0 then
                     table.insert(temp, scanTable[raceIndex][name] .. ":" .. completionCount);
                 end
