@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: March 10, 2020          --
+--    Updated: March 31, 2020          --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -1560,13 +1560,10 @@ end
 ----------------------------
 
 function wlUpdateFaction()
-    for i=1, 500 do
-        local name, _, standing, _, _, _, _, _, header = GetFactionInfo(i);
-        if not name then
-            break;
-        end
+    for i=1, GetNumFactions() do
+        local name, _, standing, _, _, _, _, _, header, _, _, _, _, factionId = GetFactionInfo(i);
         if name and not header then
-            wlFaction[name] = standing;
+            wlFaction[name] = { standing = standing, id = factionId };
         end
     end
 end
@@ -1581,7 +1578,7 @@ function wlUnitFaction(unit)
     for line=2, wlGameTooltip:NumLines() do
         local faction = _G["wlGameTooltipTextLeft"..line]:GetText();
         if wlFaction[faction] then
-            return faction, wlFaction[faction];
+            return faction, wlFaction[faction].standing;
         end
     end
 
@@ -2144,37 +2141,53 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_COMBAT_TEXT_UPDATE(self, messageType, param1, param2)
-    if messageType == "FACTION" then
+-- Localized string for matching reputation increase chat combat message
+local WL_REP_INC = string.gsub(string.gsub(FACTION_STANDING_INCREASED, "(%%s)", "(.+)"), "(%%d)", "(%%d+)");
+
+-- Localized string for matching reputation decrease chat combat message
+local WL_REP_DEC = string.gsub(string.gsub(FACTION_STANDING_DECREASED, "(%%s)", "(.+)"), "(%%d)", "(%%d+)");
+
+-- Event callback for CHAT_MSG_COMBAT_FACTION_CHANGE for gathering reputation changes
+function wlEvent_CHAT_MSG_COMBAT_FACTION_CHANGE(self, msg)
+    local _, _, factionName, amount = string.find(msg, WL_REP_INC);
+    if (not factionName or not amount) then
+        _, _, factionName, amount = string.find(msg, WL_REP_DEC);
+        if (amount) then
+            amount = -amount;
+        end
+    end
+
+    if (not factionName or not amount) then
+        return;
+    end
+
+    if (not wlFaction[factionName]) then
         wlUpdateFaction();
-        if wlIsValidInterval(wlTracker.quest.time or 0, wlGetTime(), 1000) and wlTracker.quest.action == "turn-in" then
-            return; -- Quest reputation
-        elseif not wlIsValidInterval(wlTracker.rep.time or 0, wlGetTime(), 1000) or not wlFaction[param1] then
-            return; -- Not kill reputation
-        end
-        
-        if param2 == 0 then -- for safety
-            return;
-        end
-        
-        local repMod = 1;
-        if IsSpellKnown(20599) then -- Diplomacy
-            repMod = repMod + 0.1;
-        end
-        if IsSpellKnown(170200) then -- Trading Pact
-            repMod = repMod + 0.2;
-        end
-        for buffName, factMod in pairs(WL_REP_MODS) do
-            if AuraUtil.FindAuraByName(buffName, "player") then
-                if param1 == factMod[1] or factMod == nil then
-                    repMod = repMod + factMod[2];
-                end
+    end
+
+    if wlIsValidInterval(wlTracker.quest.time or 0, wlGetTime(), 1000) and wlTracker.quest.action == "turn-in" then
+        return; -- Quest reputation
+    elseif not wlIsValidInterval(wlTracker.rep.time or 0, wlGetTime(), 1000) or not wlFaction[factionName] then
+        return; -- Not kill reputation
+    end
+
+    local repMod = 1;
+    if IsSpellKnown(20599) then -- Diplomacy
+        repMod = repMod + 0.1;
+    end
+    if IsSpellKnown(170200) then -- Trading Pact
+        repMod = repMod + 0.2;
+    end
+    for buffName, factMod in pairs(WL_REP_MODS) do
+        if AuraUtil.FindAuraByName(buffName, "player") then
+            if factionName == factMod[1] or factMod == nil then
+                repMod = repMod + factMod[2];
             end
         end
-        
-        param2 = floor((param2/repMod) + 0.5);
-        wlUpdateVariable(wlUnit, wlTracker.rep.id, "spec", wlGetInstanceDifficulty(), "rep", wlConcat(param1, wlFaction[param1], param2, wlTracker.rep.flags), "add", 1);
     end
+
+    amount = floor((amount/repMod) + 0.5);
+    wlUpdateVariable(wlUnit, wlTracker.rep.id, "spec", wlGetInstanceDifficulty(), "rep", wlConcat(factionName, wlFaction[factionName].standing, amount, wlTracker.rep.flags, wlFaction[factionName].id), "add", 1);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4245,7 +4258,7 @@ local wlEvents = {
     QUEST_LOG_UPDATE = wlEvent_QUEST_LOG_UPDATE,
     QUEST_LOOT_RECEIVED = wlEvent_QUEST_LOOT_RECEIVED,
     UNIT_QUEST_LOG_CHANGED = wlEvent_UNIT_QUEST_LOG_CHANGED,
-    COMBAT_TEXT_UPDATE = wlEvent_COMBAT_TEXT_UPDATE,
+    CHAT_MSG_COMBAT_FACTION_CHANGE = wlEvent_CHAT_MSG_COMBAT_FACTION_CHANGE,
 
     -- garrison
     GARRISON_MISSION_LIST_UPDATE = wlEvent_GARRISON_MISSION_LIST_UPDATE,
