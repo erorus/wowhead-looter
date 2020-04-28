@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: March 31, 2020          --
+--    Updated: April 28, 2020          --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -229,6 +229,46 @@ local WL_LOOT_TOAST_NOSPELL =
     [174960] = true, -- Cache of the Aqir Swarm
     [174961] = true, -- Cache of the Amathet
 
+    -- Black Empire gears
+    -- Leather
+    [173407] = true,
+    [173408] = true,
+    [173409] = true,
+    [173410] = true,
+    [173411] = true,
+    [173412] = true,
+    [173413] = true,
+    [173424] = true,
+
+    -- Mail
+    [173400] = true,
+    [173401] = true,
+    [173402] = true,
+    [173403] = true,
+    [173404] = true,
+    [173405] = true,
+    [173406] = true,
+    [173425] = true,
+
+    -- Plate
+    [173393] = true,
+    [173394] = true,
+    [173395] = true,
+    [173396] = true,
+    [173397] = true,
+    [173398] = true,
+    [173399] = true,
+    [173422] = true,
+
+    -- Cloth
+    [173414] = true,
+    [173415] = true,
+    [173416] = true,
+    [173417] = true,
+    [173418] = true,
+    [173419] = true,
+    [173420] = true,
+    [173423] = true,
 };
 
 local WL_REP_MODS = {
@@ -2788,25 +2828,17 @@ function wlBagItemOnUse(link, bag, slot)
     if bag and slot then
         local openable = select(6, GetContainerItemInfo(bag, slot));
         if openable then
-            wlGameTooltip:ClearLines();
-            wlGameTooltip:SetBagItem(bag, slot);
-            for i=2, wlGameTooltip:NumLines() do
-                local text = _G["wlGameTooltipTextLeft"..i]:GetText();
-                if text == ITEM_OPENABLE then
-                    wlClearTracker("spell");
-                    wlTrackerClearedTime = now;
-                    wlTracker.spell.time = now;
-                    wlTracker.spell.event = "SUCCEEDED";
-                    wlTracker.spell.action = "Opening";
-                    wlTracker.spell.kind = "item";
-                    wlTracker.spell.id = id;
-                    wlTracker.spell.name = wlGameTooltipTextLeft1:GetText();
-                    if not wlChatLootIsBlocked and WL_SPECIAL_CONTAINERS[id] then
-                        wlTracker.spell.specialEventId = nil;
-                        wlTimers.clearSpecialLoot = now + 500;
-                    end
-                    break;
-                end
+            wlClearTracker("spell");
+            wlTrackerClearedTime = now;
+            wlTracker.spell.time = now;
+            wlTracker.spell.event = "SUCCEEDED";
+            wlTracker.spell.action = "Opening";
+            wlTracker.spell.kind = "item";
+            wlTracker.spell.id = id;
+            wlTracker.spell.name = wlGameTooltipTextLeft1:GetText();
+            if not wlChatLootIsBlocked and WL_SPECIAL_CONTAINERS[id] then
+                wlTracker.spell.specialEventId = nil;
+                wlTimers.clearSpecialLoot = now + 500;
             end
         end
     end
