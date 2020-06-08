@@ -270,51 +270,52 @@ elseif clientLocale == "frFR" then
 
 elseif clientLocale == "ruRU" then
 
-    WL_LOADED = "%s загружено (%d)";
+    WL_LOADED = "%s загружен (%d)";
     
     -- Descriptions
-    WL_DESC_NPCID = "Показать/скрыть подсказку с вашими NPC ID.";
-    WL_DESC_NPCID_RESET = "Сбросить позицию подсказки NPC ID.";
-    WL_DESC_LOCATION = "Показать/скрыть подсказку с вашими координатами.";
-    WL_DESC_LOCATION_RESET = "Сбросить позицию подсказки координат.";
-    WL_DESC_LOCATION_WORLDMAP = "Показать/скрыть ваши текущие координаты на карте мира.";
+    WL_DESC_NPCID = "Показать или скрыть перемещаемую подсказку с ID неигровых персонажей";
+    WL_DESC_NPCID_RESET = "Сбросить позицию подсказки с ID неигровых персонажей.";
+    WL_DESC_LOCATION = "Показать или скрыть перемещаемую подсказку с текущими координатами.";
+    WL_DESC_LOCATION_RESET = "Сбросить позицию подсказки с текущими координатами.";
+    WL_DESC_LOCATION_WORLDMAP = "Показать или скрыть текущие координаты на карте мира.";
     
     WL_HELP = {
-        "|cffffff00Wowhead Looter справка:|r",
+        "|cffffff00Справочная информация о Wowhead Looter:|r",
         "  |cffffff7f" ..GAME_VERSION_LABEL.. ":|r %VERSION%",
-        "  |cffffff7f/wl reset|r - Сброс всех данных, собранных до сих пор.",
-        "  |cffffff7f/wl minimap|r - Показать/скрыть Кнопка миникарты.",
+        "  |cffffff7f/wl reset|r - Сбросить все данные, собранные до настоящего момента.",
+        "  |cffffff7f/wl minimap|r - Показать/скрыть кнопки около миникарты.",
         "  |cffffff7f/wl id|r - "..WL_DESC_NPCID,
         "  |cffffff7f/wl id reset|r - "..WL_DESC_NPCID_RESET,
-        "  |cffffff7f/wl loc|r - Отобразить ваши текущие координаты в чате.",
+        "  |cffffff7f/wl loc|r - Отобразить текущие координаты в окне чата.",
         "  |cffffff7f/wl loc map|r - "..WL_DESC_LOCATION_WORLDMAP,
         "  |cffffff7f/wl loc tooltip|r - "..WL_DESC_LOCATION,
         "  |cffffff7f/wl loc reset|r - "..WL_DESC_LOCATION_RESET,
     };
     
-    WL_ENABLED = "|cff00ff00включено|r";
-    WL_DISABLED = "|cffff0000выключено|r";
+    WL_ENABLED = "|cff00ff00включена|r";
+    WL_DISABLED = "|cffff0000отключена|r";
 
     -- Coordinate
-    WL_LOC = "Ваши текущие координаты: %.1f, %.1f.";
-    WL_LOC_MAP = "Мировые координаты: %s.";
-    WL_LOC_TOOLTIP = "Подсказка координат: %s.";
+    WL_LOC = "Текущие координаты: %.1f, %.1f.";
+    WL_LOC_MAP = "Теперь строка с мировыми координатами %s.";
+    WL_LOC_TOOLTIP = "Теперь подсказка с координатами %s.";
     WL_LOC_CURSOR = "Курсор";
 
     -- Id
-    WL_ID_TOOLTIP = "ID подсказки: %s.";
+    WL_ID_TOOLTIP = "Теперь подсказка, отображающая ID неигровых персонажей, %s.";
 
     -- Completist
-    WL_UPLOAD_REMINDER = "Не забудьте загрузить данные, собранные при помощи Wowhead Client!"
-    WL_COLLECT_DONE = "Данные полностью были собраны.";
-    WL_COLLECT_MSG = "%s персонажа были успешно собраны.";
+    WL_UPLOAD_REMINDER = "Не забудьте загрузить данные, собранные с помощью Wowhead Client!"
+    WL_COLLECT_DONE = "Данные о завершенности были успешно собраны.";
+    WL_COLLECT_MSG = "Данные, касающиеся персонажа %s, были успешно собраны.";
     WL_COLLECT_GLYPHS = "символы";
     WL_COLLECT_ARCHAEOLOGY = "археология";
     WL_COLLECT_LASTSEP = " и ";
 
     -- Misc
-    WL_RUNSAWAY = "%s пытается убежать в страхе!";
+    WL_RUNSAWAY = "%s в страхе пытается убежать!";
     WL_CRITTER = "Существа";
+    WL_MINIMAP = "Теперь кнопка около миникарты %s.";
     
     -- Armor Specialization
     WL_PLATE = "Латы";
@@ -322,17 +323,17 @@ elseif clientLocale == "ruRU" then
     WL_LEATHER = "Кожа";
     WL_CLOTH = "Ткань";
     
-    WL_RESET_CONFIRM_TEXT = "Вы хотите сбросить все Wowhead Looter собрано до сих пор?\n|cffff0000Это также обновит пользовательский интерфейс.|r";
+    WL_RESET_CONFIRM_TEXT = "Вы хотите сбросить все данные, собранные Wowhead Looter до настоящего момента?\n|cffff0000После этого интерфейс будет перезагружен.|r";
 
     -- Options
-    WL_OPTIONS_MINIMAP_CLICK = "Щелкните, чтобы открыть опции.";
-    WL_OPTIONS_MINIMAP_SHOW = "Показать миникарте кнопку";
-    WL_OPTIONS_COMPLETION_DATA = "Завершение данных";
-    WL_OPTIONS_COLLECT = "Cобирать";
-    WL_OPTIONS_LOCATION = "Location";
-    WL_OPTIONS_TOOLTIP = "местоположение";
-    WL_OPTIONS_RESET_ALL = "Сброс всех данных";
-    WL_OPTIONS_GENERAL = "общий";
+    WL_OPTIONS_MINIMAP_CLICK = "Щелкните, чтобы увидеть опции.";
+    WL_OPTIONS_MINIMAP_SHOW = "Отображать кнопку около миникарты.";
+    WL_OPTIONS_COMPLETION_DATA = "Данные о завершенности";
+    WL_OPTIONS_COLLECT = "Собрать";
+    WL_OPTIONS_LOCATION = "Локация";
+    WL_OPTIONS_TOOLTIP = "Подсказка";
+    WL_OPTIONS_RESET_ALL = "Сбросить все данные";
+    WL_OPTIONS_GENERAL = "Общее";
 
 
 end
