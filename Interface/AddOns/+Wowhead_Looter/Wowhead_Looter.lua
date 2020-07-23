@@ -548,7 +548,6 @@ local WL_WORLD_QUEST_EMISSARY_MAPS = {
 
 -- Speed optimizations
 local CheckInteractDistance = CheckInteractDistance;
-local DungeonUsesTerrainMap = DungeonUsesTerrainMap;
 local GetAchievementCriteriaInfo = GetAchievementCriteriaInfo;
 local GetCursorPosition = GetCursorPosition;
 local GetFactionInfo = GetFactionInfo;
@@ -563,15 +562,12 @@ local GetMerchantItemCostItem = GetMerchantItemCostItem;
 local GetMerchantItemInfo = GetMerchantItemInfo;
 local GetMerchantItemLink = GetMerchantItemLink;
 local GetNetStats = GetNetStats;
-local GetNumDungeonMapLevels = GetNumDungeonMapLevels;
 local GetNumLootItems = GetNumLootItems;
-local GetNumPartyMembers = GetNumPartyMembers;
 local GetArtifactInfoByRace = GetArtifactInfoByRace;
 local GetNumArchaeologyRaces = GetNumArchaeologyRaces;
 local GetNumArtifactsByRace = GetNumArtifactsByRace;
 local GetNumQuestLeaderBoards = GetNumQuestLeaderBoards;
 local GetNumQuestLogEntries = GetNumQuestLogEntries;
-local GetNumRaidMembers = GetNumRaidMembers;
 
 local GetPlayerMapPosition = function(unitToken)
     local uiMapID = C_Map.GetBestMapForUnit(unitToken) or WorldMapFrame:GetMapID();
@@ -600,16 +596,12 @@ local GetRealZoneText = GetRealZoneText;
 local GetRewardText = GetRewardText;
 local GetSpellInfo = GetSpellInfo;
 local GetTradeSkillInfo = GetTradeSkillInfo;
-local GetTradeSkillRecipeLink = GetTradeSkillRecipeLink;
 local GetTrainerServiceCost = GetTrainerServiceCost;
 local GetTrainerServiceInfo = GetTrainerServiceInfo;
 local GetTrainerServiceSkillReq = GetTrainerServiceSkillReq;
 local IsEquippedItem = IsEquippedItem;
 local IsFishingLoot = IsFishingLoot;
 local IsPartyLFG = IsPartyLFG;
-local LootSlotIsCoin = LootSlotIsCoin;
-local LootSlotIsCurrency = LootSlotIsCurrency;
-local LootSlotIsItem = LootSlotIsItem;
 local SelectQuestLogEntry = SelectQuestLogEntry;
 local SendAddonMessage = C_ChatInfo.SendAddonMessage;
 local UnitClass = UnitClass;
@@ -3799,57 +3791,75 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 local wlAchievementsCompleted = -1
+local wlScanAchievementsProgress = nil;
+
+-- Scan one achievement category at a time
+function wlScanAchievementsStep()
+    local catIdx = wlScanAchievementsProgress.catIdx;
+    local cat = wlScanAchievementsProgress.catList[catIdx];
+    local total = GetCategoryNumAchievements(cat, true)
+
+    for i=1, total do
+        local id = GetAchievementInfo(cat, i)
+        while id do
+            local _, _, _, completed, month, day, year, _, _, _, _, isGuild = GetAchievementInfo(id)
+            if (completed and not isGuild) then
+                wlScanAchievementsProgress.achievementTableIdx = wlScanAchievementsProgress.achievementTableIdx + 1
+                if year < 10 then
+                    year = '0'..year
+                end
+                if month < 10 then
+                    month = '0'..month
+                end
+                if day < 10 then
+                    day = '0'..day
+                end
+                wlScanAchievementsProgress.achievementTable[wlScanAchievementsProgress.achievementTableIdx] = id .. ':' .. year .. month .. day
+
+                id = GetPreviousAchievement(id)
+            else
+                id = nil
+            end
+        end
+    end
+
+    if (catIdx < #wlScanAchievementsProgress.catList) then
+        wlScanAchievementsProgress.catIdx = catIdx + 1;
+        wlTimers.scanAchievements = wlGetTime() + wlScanAchievementsProgress.interval;
+    else
+        local ids = table.concat(wlScanAchievementsProgress.achievementTable,',')
+
+        if ids ~= "" then
+            wlScans.achievements = ids;
+        else
+            -- skip resetting achievements, perhaps server didn't send them down yet. achievements never go completely away.
+            -- wlScans.achievements = "-1";
+        end
+        wlScanAchievementsProgress = nil;
+    end
+end
+
+
 function wlScanAchievements(userInitiated)
-    local ids = ""
+    if (wlTimers.scanAchievements) then
+        return;
+    end
 
     local _, completed = GetNumCompletedAchievements()
     if (not userInitiated) and ((wlAchievementsCompleted == completed) or UnitAffectingCombat("player") or InCombatLockdown()) then
         return false -- skip exhaustive scan if no new achievements or if in combat
     end
+
     wlAchievementsCompleted = completed
 
-    local catList = GetCategoryList()
+    wlScanAchievementsProgress = {};
+    wlScanAchievementsProgress.catList = GetCategoryList();
+    wlScanAchievementsProgress.catIdx = 1;
+    wlScanAchievementsProgress.achievementTable = {}
+    wlScanAchievementsProgress.achievementTableIdx = #wlScanAchievementsProgress.achievementTable
+    wlScanAchievementsProgress.interval = 200;
 
-    local achievementTable = {}
-    local achievementTableIdx = #achievementTable
-
-    for _, cat in pairs(catList) do
-        local total = GetCategoryNumAchievements(cat, true)
-        for i=1, total do
-            local id = GetAchievementInfo(cat, i)
-            while id do
-                local _, _, _, completed, month, day, year, _, _, _, _, isGuild = GetAchievementInfo(id)
-                if (completed and not isGuild) then
-                    achievementTableIdx = achievementTableIdx + 1
-                    if year < 10 then
-                        year = '0'..year
-                    end
-                    if month < 10 then
-                        month = '0'..month
-                    end
-                    if day < 10 then
-                        day = '0'..day
-                    end
-                    achievementTable[achievementTableIdx] = id .. ':' .. year .. month .. day
-
-                    id = GetPreviousAchievement(id)
-                else
-                    id = nil
-                end
-            end
-        end
-    end
-
-    ids = table.concat(achievementTable,',')
-
-    if ids ~= "" then
-        wlScans.achievements = ids;
-        return true;
-    else
-        -- skip resetting achievements, perhaps server didn't send them down yet. achievements never go completely away.
-        -- wlScans.achievements = "-1";
-        return false;
-    end
+    wlTimers.scanAchievements = wlGetTime() + wlScanAchievementsProgress.interval;
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4770,6 +4780,9 @@ function wl_OnUpdate(self, elapsed)
                         end    
                         wlMsgCollected = "";
                     end
+
+                elseif name == "scanAchievements" then
+                    wlScanAchievementsStep();
                 end
             end
         end
