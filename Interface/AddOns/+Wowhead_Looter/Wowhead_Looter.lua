@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: April 28, 2020          --
+--    Updated: July 23, 2020           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
