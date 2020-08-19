@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 8.3.0                     --
---    Updated: July 23, 2020           --
+--    Updated: August 18, 2020         --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -3607,6 +3607,7 @@ end
 
 -- we need that here.
 local wlScanToys_processing = false
+local wlScanToys_time = 0
 function wlEvent_TOYS_UPDATED(self, itemID, new)
     -- We got some new toys here.
     if (new or itemID) then
@@ -3727,6 +3728,12 @@ function wlScanToys(processToys)
     if C_ToyBox.GetNumLearnedDisplayedToys() == 0 then
         return
     end
+
+    local now = wlGetTime();
+    if (now - wlScanToys_time) < 5000 then
+        return;
+    end
+    wlScanToys_time = now;
 
     wlScanToys_processing = true
 
