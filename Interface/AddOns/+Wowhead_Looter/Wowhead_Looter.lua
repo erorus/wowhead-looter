@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.1                     --
---    Updated: August 26, 2020         --
+--    Updated: October 14, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2363,18 +2363,15 @@ function wlSeenWorldQuests()
         end
     end
 
-    -- Temporarily disabled for 9.0.1
-    --[[
     -- Now pick up emissary quests, since they're not returned in GetQuestsForPlayerByMapID
     for i = 1, #WL_WORLD_QUEST_EMISSARY_MAPS, 1 do
-        local rows = GetQuestBountyInfoForMapID(WL_WORLD_QUEST_EMISSARY_MAPS[i])
+        local rows = C_QuestLog.GetBountiesForMapID(WL_WORLD_QUEST_EMISSARY_MAPS[i])
         if rows then
             for rowIdx = 1, #rows, 1 do
                 addWorldQuestLine(rows[rowIdx].questID)
             end
         end
     end
-    --]]
 
     if #results > 0 then
         wlWorldQuests = wlGetPlayerRealmId() .. '=' .. table.concat(results,',')
