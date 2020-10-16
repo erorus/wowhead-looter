@@ -2383,22 +2383,53 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlSeenIslandExpeditions()
-
-    -- BFA 8.2 GetTextureWithStateVisualizationInfo renamed to GetTextureAndTextVisualizationInfo
-    local textureFunc = C_UIWidgetManager.GetTextureWithStateVisualizationInfo or C_UIWidgetManager.GetTextureAndTextVisualizationInfo;
-    if (not textureFunc) then
-        return;
-    end
-
     -- found in Blizzard_IslandsQueueUI.lua
     local ISLANDS_QUEUE_WIDGET_SET_ID = 127;
 
+    -- Blizz changed from providing the ID to providing the name. Cute.
+    local lookup = {
+        ["islands-queue-card-dreadchain-icetroll"] = 5119,
+        ["islands-queue-card-skitteringhollow-troggs"] = 5121,
+        ["islands-queue-card-moltencay-ogre"] = 5122,
+        ["islands-queue-card-dreadchain-mogu"] = 5127,
+        ["islands-queue-card-dreadchain-kvaldir"] = 5128,
+        ["islands-queue-card-moltencay-jungletroll"] = 5129,
+        ["islands-queue-card-moltencay-sandtroll"] = 5130,
+        ["islands-queue-card-moltencay-yaungol"] = 5131,
+        ["islands-queue-card-rottingmire-jinyu"] = 5132,
+        ["islands-queue-card-rottingmire-saurok"] = 5133,
+        ["islands-queue-card-rottingmire-strandedpirates"] = 5134,
+        ["islands-queue-card-skitteringhollow-kobolds"] = 5135,
+        ["islands-queue-card-skitteringhollow-nerubians"] = 5136,
+        ["islands-queue-card-ungolruins-hozen"] = 5138,
+        ["islands-queue-card-ungolruins-pygmy"] = 5139,
+        ["islands-queue-card-ungolruins-quilboar"] = 5140,
+        ["islands-queue-card-verdantwilds-druids"] = 5142,
+        ["islands-queue-card-verdantwilds-furbolgs"] = 5143,
+        ["islands-queue-card-verdantwilds-keepers"] = 5144,
+        ["islands-queue-card-whisperingreef-makrura"] = 5146,
+        ["islands-queue-card-whisperingreef-murlocs"] = 5147,
+        ["islands-queue-card-whisperingreef-naga"] = 5148,
+        ["islands-queue-card-havenswood-cultist"] = 5207,
+        ["islands-queue-card-havenswood-faceless"] = 5209,
+        ["islands-queue-card-havenswood-worgen"] = 5210,
+        ["islands-queue-card-jorundall-taunka"] = 5212,
+        ["islands-queue-card-jorundall-vargul"] = 5213,
+        ["islands-queue-card-jorundall-vrykul"] = 5214,
+        ["islands-queue-card-snowblossom-mogu"] = 5261,
+        ["islands-queue-card-snowblossom-mantid"] = 5263,
+        ["islands-queue-card-snowblossom-vermin"] = 5264,
+        ["islands-queue-card-crestfall-pirates"] = 5265,
+        ["islands-queue-card-crestfall-orc"] = 5267,
+        ["islands-queue-card-crestfall-dragon"] = 5268,
+    }
+
     for i,widget in ipairs(C_UIWidgetManager.GetAllWidgetsBySetID(ISLANDS_QUEUE_WIDGET_SET_ID)) do
-        local info = textureFunc(widget.widgetID);
+        local info = C_UIWidgetManager.GetTextureAndTextVisualizationInfo(widget.widgetID)
         if info and info.shownState ~= 0 then
-            local textureId = info.portraitTextureKitID or info.textureKitID;
-            if (textureId) then
-                wlSeenDaily('t'..textureId);
+            local textureName = info.textureKit
+            if textureName and lookup[textureName] then
+                wlSeenDaily('t'..lookup[textureName])
             end
         end
     end
