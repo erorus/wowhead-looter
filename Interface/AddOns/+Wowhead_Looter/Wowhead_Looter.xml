@@ -14,7 +14,7 @@
 </GameTooltip>
 
 
-<Frame name="wlDebugFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent">
+<Frame name="wlDebugFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
     <Size>
         <AbsDimension x="450" y="600" />
     </Size>
@@ -35,17 +35,9 @@
         </Anchors>
     </TitleRegion>
 
-    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-        <BackgroundInsets>
-            <AbsInset left="8" right="8" top="8" bottom="8" />
-        </BackgroundInsets>
-        <TileSize>
-            <AbsValue val="32" />
-        </TileSize>
-        <EdgeSize>
-            <AbsValue val="32" />
-        </EdgeSize>
-    </Backdrop>
+    <KeyValues>
+        <KeyValue key="backdropInfo" value="BACKDROP_DIALOG_32_32" type="global"/>
+    </KeyValues>
 
     <Layers>
         <Layer level="ARTWORK">
@@ -192,7 +184,7 @@
 </Frame>
 
 
-<Frame name="wlPopupFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent">
+<Frame name="wlPopupFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
     <Size>
         <AbsDimension x="450" y="135" />
     </Size>
@@ -213,17 +205,9 @@
         </Anchors>
     </TitleRegion>
 
-    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-        <BackgroundInsets>
-            <AbsInset left="8" right="8" top="8" bottom="8" />
-        </BackgroundInsets>
-        <TileSize>
-            <AbsValue val="32" />
-        </TileSize>
-        <EdgeSize>
-            <AbsValue val="32" />
-        </EdgeSize>
-    </Backdrop>
+    <KeyValues>
+        <KeyValue key="backdropInfo" value="BACKDROP_DIALOG_32_32" type="global"/>
+    </KeyValues>
 
     <Layers>
         <Layer level="ARTWORK">
@@ -377,31 +361,16 @@
 </Frame>
 
 
-<Frame name="wlLocMapFrame" frameStrata="HIGH" movable="false" enableMouse="false" parent="WorldMapFrame" hidden="true">
+<Frame name="wlLocMapFrame" frameStrata="HIGH" movable="false" enableMouse="false" parent="WorldMapFrame" hidden="true" inherits="BackdropTemplate">
     <Size>
         <AbsDimension x="1" y="28" />
     </Size>
 
-    <Anchors>
-        <Anchor point="BOTTOM" relativeTo="WorldMapFrame" relativePoint="BOTTOM">
-            <Offset>
-                <AbsDimension x="2" y="0"/>
-            </Offset>
-        </Anchor>
-    </Anchors>
-
-    <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-        <BackgroundInsets>
-            <AbsInset left="4" right="4" top="4" bottom="4" />
-        </BackgroundInsets>
-        <TileSize>
-            <AbsValue val="16" />
-        </TileSize>
-        <EdgeSize>
-            <AbsValue val="16" />
-        </EdgeSize>
-        <Color r="0" g="0" b="0" a="0.75" />
-    </Backdrop>
+    <KeyValues>
+        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
+        <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
+        <KeyValue key="backdropColorAlpha" value="0.75" type="number"/>
+    </KeyValues>
 
     <Layers>
         <Layer level="OVERLAY">
@@ -419,13 +388,13 @@
     </Layers>
 
     <Scripts>
-        <OnLoad function="wlLocMapFrame_OnLoad" />
+        <OnLoad inherit="prepend" function="wlLocMapFrame_OnLoad" />
         <OnUpdate function="wlLocMapFrame_OnUpdate" />
     </Scripts>
 </Frame>
 
 
-<Frame name="wlLocTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent">
+<Frame name="wlLocTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -443,18 +412,11 @@
         <Anchor point="CENTER" />
     </Anchors>
 
-    <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-        <BackgroundInsets>
-            <AbsInset left="4" right="4" top="4" bottom="4" />
-        </BackgroundInsets>
-        <TileSize>
-            <AbsValue val="16" />
-        </TileSize>
-        <EdgeSize>
-            <AbsValue val="16" />
-        </EdgeSize>
-        <Color r="0" g="0" b="0" a="0.5" />
-    </Backdrop>
+    <KeyValues>
+        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
+        <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
+        <KeyValue key="backdropColorAlpha" value="0.5" type="number"/>
+    </KeyValues>
 
     <Layers>
         <Layer level="OVERLAY">
@@ -472,7 +434,7 @@
 
     <Scripts>
         <OnUpdate function="wlLocTooltipFrame_OnUpdate" />
-        <OnLoad>
+        <OnLoad inherit="prepend">
                 self:RegisterForDrag("LeftButton")
         </OnLoad>
         <OnDragStart>
@@ -487,7 +449,7 @@
 </Frame>
 
 
-<Frame name="wlIdTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent">
+<Frame name="wlIdTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -505,18 +467,11 @@
         <Anchor point="CENTER" />
     </Anchors>
 
-    <Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
-        <BackgroundInsets>
-            <AbsInset left="4" right="4" top="4" bottom="4" />
-        </BackgroundInsets>
-        <TileSize>
-            <AbsValue val="16" />
-        </TileSize>
-        <EdgeSize>
-            <AbsValue val="16" />
-        </EdgeSize>
-        <Color r="0" g="0" b="0" a="0.5" />
-    </Backdrop>
+    <KeyValues>
+        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
+        <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
+        <KeyValue key="backdropColorAlpha" value="0.5" type="number"/>
+    </KeyValues>
 
     <Layers>
         <Layer level="OVERLAY">
@@ -534,7 +489,7 @@
 
     <Scripts>
         <OnUpdate function="wlIdTooltipFrame_OnUpdate" />
-        <OnLoad>
+        <OnLoad inherit="prepend">
             self:RegisterForDrag("LeftButton")
         </OnLoad>
         <OnDragStart>

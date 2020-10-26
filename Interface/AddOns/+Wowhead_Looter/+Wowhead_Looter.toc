@@ -1,7 +1,7 @@
 ## Interface: 90001
 ## Title: Wowhead Looter
-## Notes: Gathers data for Wowhead while you play. Version 80300.
-## Author: mystadio
+## Notes: Gathers data for Wowhead while you play.
+## Author: Wowhead
 ## eMail: feedback@wowhead.com
 ## URL: https://www.wowhead.com/
 ## Version: 90001

@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.1                     --
---    Updated: October 14, 2020        --
+--    Updated: October 23, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -4931,6 +4931,7 @@ function wlLocMapFrame_OnLoad()
     wlLocMapFrameText:SetText(UnitName("player")..": 100.0, 100.0  -  "..NOT_APPLICABLE..": 100.0, 100.0");
     wlLocMapFrame:SetWidth(wlLocMapFrameText:GetStringWidth() + 20);
     wlLocMapFrame:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 1);
+    wlLocMapFrame:SetPoint("CENTER", WorldMapFrame:GetCanvasContainer(), "BOTTOM", 0, 12);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
