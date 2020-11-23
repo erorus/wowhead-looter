@@ -537,6 +537,7 @@ local WL_DAILY_PROFESSION_TRADER_QUESTS = { 38243, 38290, 38293, 38287, 38296 }
 -- quests that are repeatable/daily/weekly and we're tracking them, but the game doesn't consider them to be dailies
 local WL_DAILY_BUT_NOT_REALLY = {
     41183,40857,41167,41164,41192,41171, -- Dariness (Rare Archaeology projects)
+    61088,60775,61103,60762,60902,61104,60732,61079,60622,60646,62234,62214, -- Ve'nari weekly
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
@@ -663,6 +664,8 @@ local wlTrackerClearedTime = 0;
 local wlChatLootIsBlocked = false;
 local wlLastShipmentContainer = nil;
 local wlLockedID = nil;
+local wlEventFrame;
+local wlCallings;
 
 -- Hooks
 local wlDefaultGetQuestReward;
@@ -1742,6 +1745,15 @@ end
 --------------------------
 --------------------------
 
+--[[
+-- Called when Blizzard pushes new covenant callings quests, which are similar to world quests (and gathered with them).
+]]
+function wlEvent_COVENANT_CALLINGS_UPDATED(self, callings)
+    wlCallings = callings;
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
 function wlEvent_UNIT_QUEST_LOG_CHANGED(self, unit)
     if unit ~= "player" then
         return;
@@ -2369,6 +2381,15 @@ function wlSeenWorldQuests()
         if rows then
             for rowIdx = 1, #rows, 1 do
                 addWorldQuestLine(rows[rowIdx].questID)
+            end
+        end
+    end
+
+    -- Covenant Callings are gathered async by other events
+    if wlCallings then
+        for i = 1, Constants.Callings.MaxCallings do
+            if wlCallings[i] then
+                addWorldQuestLine(wlCallings[i].questID);
             end
         end
     end
@@ -3363,6 +3384,11 @@ function wlCollect(userInitiated)
         return;
     end
 
+    if C_CovenantCallings.AreCallingsUnlocked() then
+        -- This will fire COVENANT_CALLINGS_UPDATED with list of callings as payload.
+        C_CovenantCallings.RequestCallings();
+    end
+
     wlQueryTimePlayed();
     
     wlScanAppearances()
@@ -4244,8 +4270,46 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+--[[
+-- When we're in the Torghast Entrance zone, scan the vignettes to determine which wings are open.
+]]
+function wlCheckTorghastWings()
+    if C_Map.GetBestMapForUnit("player") ~= 1911 then
+        return;
+    end
+
+    local guids = C_VignetteInfo.GetVignettes();
+    for _, guid in ipairs(guids) do
+        local info = C_VignetteInfo.GetVignetteInfo(guid);
+        if info.vignetteID >= 4184 and info.vignetteID <= 4189 then
+            wlSeenDaily('v' .. info.vignetteID);
+        end
+    end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+--[[
+-- Event handler for VIGNETTES_UPDATED, which fires after the game client gathered vignettes in the current zone. This
+-- fires about once per second as long as you're in a zone with vignettes, and not at all in zones without vignettes,
+-- so we dynamically register/unregister for this event with every zone change.
+]]
+function wlEvent_VIGNETTES_UPDATED()
+    if wlEventFrame then
+        wlEventFrame:UnregisterEvent('VIGNETTES_UPDATED');
+    end
+
+    wlCheckTorghastWings();
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
 function wlEvent_ZONE_CHANGED()
     wlLocTooltipFrame_OnUpdate();
+    if wlEventFrame then
+        -- This vignettes event fires every second in zones with them, so we dynamically register and unregister it.
+        wlEventFrame:RegisterEvent('VIGNETTES_UPDATED');
+    end
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4343,6 +4407,7 @@ local wlEvents = {
     QUEST_LOOT_RECEIVED = wlEvent_QUEST_LOOT_RECEIVED,
     UNIT_QUEST_LOG_CHANGED = wlEvent_UNIT_QUEST_LOG_CHANGED,
     CHAT_MSG_COMBAT_FACTION_CHANGE = wlEvent_CHAT_MSG_COMBAT_FACTION_CHANGE,
+    COVENANT_CALLINGS_UPDATED = wlEvent_COVENANT_CALLINGS_UPDATED,
 
     -- garrison
     GARRISON_MISSION_LIST_UPDATE = wlEvent_GARRISON_MISSION_LIST_UPDATE,
@@ -4351,6 +4416,7 @@ local wlEvents = {
     PLAYER_ENTERING_WORLD = wlEvent_ZONE_CHANGED,
     ZONE_CHANGED = wlEvent_ZONE_CHANGED,
     ZONE_CHANGED_NEW_AREA = wlEvent_ZONE_CHANGED,
+    VIGNETTES_UPDATED = wlEvent_VIGNETTES_UPDATED,
 
     -- challenge mode / mythic+ affixes
     CHALLENGE_MODE_START = wlEvent_CHALLENGE_MODE_UPDATE,
@@ -4744,6 +4810,7 @@ function wl_OnLoad(self)
     
     wlCreateFrames();
 
+    wlEventFrame = self;
     for event, _ in pairs(wlEvents) do
         self:RegisterEvent(event);
     end
