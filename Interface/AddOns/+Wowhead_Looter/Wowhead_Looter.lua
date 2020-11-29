@@ -269,6 +269,14 @@ local WL_LOOT_TOAST_NOSPELL =
     [173419] = true,
     [173420] = true,
     [173423] = true,
+
+    -- 9.0
+    [181372] = true,
+    [181476] = true,
+    [181556] = true,
+    [181741] = true,
+    [181732] = true,
+    [181733] = true,
 };
 
 local WL_REP_MODS = {
