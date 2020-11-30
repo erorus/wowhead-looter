@@ -672,7 +672,6 @@ local wlTrackerClearedTime = 0;
 local wlChatLootIsBlocked = false;
 local wlLastShipmentContainer = nil;
 local wlLockedID = nil;
-local wlEventFrame;
 local wlCallings;
 
 -- Hooks
@@ -4298,15 +4297,9 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 --[[
--- Event handler for VIGNETTES_UPDATED, which fires after the game client gathered vignettes in the current zone. This
--- fires about once per second as long as you're in a zone with vignettes, and not at all in zones without vignettes,
--- so we dynamically register/unregister for this event with every zone change.
+-- Event handler for VIGNETTES_UPDATED, which fires after the game client gathered vignettes in the current zone.
 ]]
 function wlEvent_VIGNETTES_UPDATED()
-    if wlEventFrame then
-        wlEventFrame:UnregisterEvent('VIGNETTES_UPDATED');
-    end
-
     wlCheckTorghastWings();
 end
 
@@ -4314,10 +4307,7 @@ end
 
 function wlEvent_ZONE_CHANGED()
     wlLocTooltipFrame_OnUpdate();
-    if wlEventFrame then
-        -- This vignettes event fires every second in zones with them, so we dynamically register and unregister it.
-        wlEventFrame:RegisterEvent('VIGNETTES_UPDATED');
-    end
+    wlCheckTorghastWings();
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4818,7 +4808,6 @@ function wl_OnLoad(self)
     
     wlCreateFrames();
 
-    wlEventFrame = self;
     for event, _ in pairs(wlEvents) do
         self:RegisterEvent(event);
     end
