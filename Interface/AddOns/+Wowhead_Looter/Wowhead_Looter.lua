@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: December 3, 2020        --
+--    Updated: December 8, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -556,6 +556,19 @@ local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, 
 local WL_WORLD_QUEST_EMISSARY_MAPS = {
     627, -- Dalaran - pick up Legion emissaries
     875, -- Zandalar - pick up BFA emissaries
+}
+
+local WL_BASTION_STEWARD_OF_THE_DAY = {
+    ['33.8,66.9'] = 170292, -- Wylia
+    ['26.0,32.7'] = 171329, -- Ioanna
+    ['46.9,59.1'] = 170462, -- Burnsios
+    ['60.6,62.1'] = 170471, -- Platnos
+    ['45.0,64.5'] = 170491, -- Pagius
+    ['52.5,86.3'] = 170508, -- Alexandros
+    ['56.3,78.0'] = 170509, -- Chaddius
+    ['42.2,27.7'] = 171113, -- Angeliki
+    ['52.9,9.2']  = 171132, -- Covinkles
+    ['71.2,37.6'] = 171330, -- Giannakis
 }
 
 -- Speed optimizations
@@ -4319,6 +4332,34 @@ function wlEvent_CHALLENGE_MODE_UPDATE()
     wlCheckMythicAffixes();
 end
 
+
+function wlCheckStewardOfTheDay()
+    -- Bastion Steward of the day tracking
+    local uiMapId = C_Map.GetBestMapForUnit("player");
+    if uiMapId ~= 1533 then
+        return;
+    end
+    local poiId = C_GossipInfo.GetPoiForUiMapID(uiMapId);
+    if (poiId) then
+        local poiInfo = C_GossipInfo.GetPoiInfo(uiMapId, poiId);
+        if (poiInfo and poiInfo.position) then
+            local key = ('%.1f,%.1f'):format(poiInfo.position.x * 100, poiInfo.position.y * 100);
+            local npcId = WL_BASTION_STEWARD_OF_THE_DAY[key];
+            if (npcId) then
+                wlSeenDaily('n' .. npcId);
+            end
+        end
+    end
+end
+
+--[[
+-- Event handler for DYNAMIC_GOSSIP_POI_UPDATED, which fires when a flag is placed on the map.
+]]
+function wlEvent_DYNAMIC_GOSSIP_POI_UPDATED()
+    wlCheckStewardOfTheDay();
+end
+
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 
@@ -4361,6 +4402,7 @@ local wlEvents = {
     TRAINER_SHOW = wlEvent_TRAINER_SHOW,
     COMBAT_LOG_EVENT_UNFILTERED = wlEvent_COMBAT_LOG_EVENT_UNFILTERED,
     UPDATE_MOUSEOVER_UNIT = wlEvent_UPDATE_MOUSEOVER_UNIT,
+    DYNAMIC_GOSSIP_POI_UPDATED = wlEvent_DYNAMIC_GOSSIP_POI_UPDATED,
 
     -- drops
     LOOT_OPENED = wlEvent_LOOT_OPENED,
