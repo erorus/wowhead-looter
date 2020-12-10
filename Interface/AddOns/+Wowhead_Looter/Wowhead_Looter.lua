@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: December 8, 2020        --
+--    Updated: December 9, 2020        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2590,6 +2590,7 @@ local wlSpells = {
     Archaeology = { GetSpellInfo(73979) or "", WL_OBJECT, 1 },
     Logging = { GetSpellInfo(167895) or "", WL_OBJECT, nil },
     Scrapping = { GetSpellInfo(WL_SPELL_SCRAPPING) or "", WL_ITEM, 1 },
+    Collecting = { GetSpellInfo(214766) or "", WL_OBJECT, 2 },
     -- BeastLore = { GetSpellInfo(1462) or "", WL_NPC, nil },
     -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 }, 
 };
