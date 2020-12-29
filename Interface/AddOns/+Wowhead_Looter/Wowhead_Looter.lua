@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: December 9, 2020        --
+--    Updated: December 28, 2020       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -3824,7 +3824,7 @@ function wlScanToys(processToys)
 
     local ids = ""
 
-    local fCollected, fUncollected = C_ToyBox.GetCollectedShown(), C_ToyBox.GetUncollectedShown()
+    local fCollected, fUncollected, fUnusable = C_ToyBox.GetCollectedShown(), C_ToyBox.GetUncollectedShown(), C_ToyBox.GetUnusableShown();
     local fSources = {}
     local numSources = C_PetJournal.GetNumPetSources() -- yes, pet sources used for toy source list
 
@@ -3832,8 +3832,17 @@ function wlScanToys(processToys)
         fSources[i] = not C_ToyBox.IsSourceTypeFilterChecked(i)
         C_ToyBox.SetSourceTypeFilter(i,true)
     end
+
+    local numExpansions = GetNumExpansions()
+    local fExpansions = {}
+    for i=1,numExpansions do
+        fExpansions[i] = not C_ToyBox.IsExpansionTypeFilterChecked(i);
+        C_ToyBox.SetExpansionTypeFilter(i,true)
+    end
+
     C_ToyBox.SetCollectedShown(true)
     C_ToyBox.SetUncollectedShown(false)
+    C_ToyBox.SetUnusableShown(true)
     C_ToyBox.SetFilterString("")
     C_ToyBox.ForceToyRefilter()
 
@@ -3862,8 +3871,12 @@ function wlScanToys(processToys)
     end
     C_ToyBox.SetCollectedShown(fCollected)
     C_ToyBox.SetUncollectedShown(fUncollected)
+    C_ToyBox.SetUnusableShown(fUnusable)
     for i=1,numSources do
         C_ToyBox.SetSourceTypeFilter(i,fSources[i])
+    end
+    for i=1,numExpansions do
+        C_ToyBox.SetExpansionTypeFilter(i,fExpansions[i])
     end
     C_ToyBox.ForceToyRefilter()
 
