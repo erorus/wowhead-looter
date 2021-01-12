@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: December 28, 2020       --
+--    Updated: January 11, 2021        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -549,6 +549,31 @@ local WL_DAILY_PROFESSION_TRADER_QUESTS = { 38243, 38290, 38293, 38287, 38296 }
 local WL_DAILY_BUT_NOT_REALLY = {
     41183,40857,41167,41164,41192,41171, -- Dariness (Rare Archaeology projects)
     61088,60775,61103,60762,60902,61104,60732,61079,60622,60646,62234,62214, -- Ve'nari weekly
+
+    -- Oribos PVP weekly
+    62284, -- Observing Battle
+    62285, -- Observing War
+    62286, -- Observing Skirmishes
+    62287, -- Observing Arenas
+    62288, -- Observing Teamwork
+
+    -- Oribos Dungeons weekly
+    60242, -- Trading Favors: Necrotic Wake
+    60243, -- Trading Favors: Sanguine Depths
+    60244, -- Trading Favors: Halls of Atonement
+    60245, -- Trading Favors: The Other Side
+    60246, -- Trading Favors: Tirna Scithe
+    60247, -- Trading Favors: Theater of Pain
+    60248, -- Trading Favors: Plaguefall
+    60249, -- Trading Favors: Spires of Ascension
+    60256, -- A Valuable Find: Halls of Atonement
+    60253, -- A Valuable Find: Necrotic Wake
+    60251, -- A Valuable Find: Plaguefall
+    60257, -- A Valuable Find: Sanguine Depths
+    60252, -- A Valuable Find: Spires of Ascension
+    60255, -- A Valuable Find: The Other Side
+    60250, -- A Valuable Find: Theater of Pain
+    60254, -- A Valuable Find: Tirna Scithe
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
