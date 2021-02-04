@@ -59,12 +59,12 @@ local WL_SPELL_BLACKLIST = {
     [135373] = true, -- Entrapment
 };
 local WL_LOOT_TOAST_BOSS = {
-	[244164] = 121818,	-- kazzak
-	[244165] = 121820,	-- azuregos
-	[244166] = 121911,	-- taerar
-	[244182] = 121913,	-- emeriss
-	[244184] = 121821,	-- lethon
-	[244183] = 121912,	-- ysondre
+    [244164] = 121818, -- kazzak
+    [244165] = 121820, -- azuregos
+    [244166] = 121911, -- taerar
+    [244182] = 121913, -- emeriss
+    [244184] = 121821, -- lethon
+    [244183] = 121912, -- ysondre
 };
 local WL_LOOT_TOAST_BAGS = {
     [142397] = 98134,     -- Heroic Cache of Treasures
@@ -116,7 +116,7 @@ local WL_LOOT_TOAST_BAGS = {
     [243132] = 146900,  -- nightfallen cache
     [243133] = 146902,  -- warden supply kit
     [243135] = 147361,  -- legionfall chest
-    
+
     -- argus tokens
     [254781] = 153214,  -- relinquished ring
     [254774] = 153209,  -- relinquished cloak
@@ -178,14 +178,14 @@ local WL_LOOT_TOAST_BAGS = {
     [252887] = 153156,  -- unsullied cloth sash
     [254636] = 153157,  -- unsullied plate gauntlets
     [254623] = 153158,  -- unsullied mail bracers
-    
+
     -- 7.3 em boxes
     [254386] = 152652,  -- gilded trunk
     [253748] = 152923,  -- gleaming footlocker
     [253747] = 152922,  -- brittle krokul chest
     [254385] = 152650,  -- scuffed krokul cache
-    
-    
+
+
 };
 
 -- Openable loot with toast but no spell
@@ -622,7 +622,7 @@ local GetNumRaidMembers = GetNumRaidMembers;
 local GetPlayerMapPosition = function(unitToken)
     local uiMapID = C_Map.GetBestMapForUnit(unitToken) or WorldMapFrame:GetMapID();
     local location = nil;
-    
+
     -- uiMapID can be nil after fresh teleports and map/instance changes.
     if uiMapID then
         location = C_Map.GetPlayerMapPosition(uiMapID, unitToken);
@@ -746,7 +746,7 @@ function wlEvent_PLAYER_LOGIN(self)
     if not wlUIReloaded then
         wlPetBlacklist = nil;
     end
-    
+
     wlUIReloaded = nil;
 
     wlHook();
@@ -757,7 +757,7 @@ function wlEvent_PLAYER_LOGIN(self)
     wlRealmList[realmList or "nil"] = 1;
 
     wlId = wlConcat(wlSelectOne(1, UnitName("player")), GetRealmName());
-    
+
     wlUpdateVariable(wlProfile, wlId, "init", {
         faction = UnitFactionGroup("player"),
         race = select(2, UnitRace("player")),
@@ -766,7 +766,7 @@ function wlEvent_PLAYER_LOGIN(self)
         n = 0,
     });
     wlN = wlUpdateVariable(wlProfile, wlId, "n", "add", 1);
-    
+
     wlUpdateVariable(wlEvent, wlId, wlN, wlGetNextEventId(), "set", {
         what = "login",
         date = wlConcat(wlGetDate()),
@@ -784,7 +784,7 @@ function wlEvent_PLAYER_LOGIN(self)
     if wlSetting.idTooltip then
         wlIdTooltipFrame:Show();
     end
-    
+
     wlUpdateMiniMapButtonPosition(_G["wlMinimapButton"]);
     if wlSetting.minimap then
         wlMinimapButton:Show();
@@ -795,7 +795,7 @@ function wlEvent_PLAYER_LOGIN(self)
     else
         _G["wlminimapCheckbox"]:SetChecked(false);
     end
-    
+
     _G["wllocMapCheckbox"]:SetChecked(wlSetting.locMap);
     _G["wllocTooltipCheckbox"]:SetChecked(wlSetting.locTooltip);
     _G["wlidTooltipCheckbox"]:SetChecked(wlSetting.idTooltip);
@@ -935,7 +935,7 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlEvent_PLAYER_TARGET_CHANGED(self)
-    
+
     if not UnitExists("target") or UnitPlayerControlled("target") or wlIsDrunk then
         return;
     end
@@ -955,7 +955,7 @@ function wlEvent_PLAYER_TARGET_CHANGED(self)
         class = select(2, UnitClass("target")),
         isPvp = UnitIsPVP("target") and true or false,
     });
-    
+
     if not wlUnit[id].class then
         wlUpdateVariable(wlUnit, id, "class", "set", select(2, UnitClass("target")));
         wlUpdateVariable(wlUnit, id, "isPvp", "set", UnitIsPVP("target") and true or false);
@@ -1012,24 +1012,24 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlRegisterUnitLocation(id, level)
-    
+
     local now = wlGetTime();
-    
+
     -- Clean cooldowns
     for k, v in pairs(wlRegisterCooldown) do
         if v < now - 30000 then -- 30 seconds
             wlRegisterCooldown[k] = nil;
         end
     end
-    
+
     -- Check for CD
     if wlRegisterCooldown[id] then
         return;
     end
-    
+
     -- Start CD
     wlRegisterCooldown[id] = now;
-    
+
     local dd = wlGetInstanceDifficulty();
     local uiMapID = wlGetCurrentUiMapID();
 
@@ -1196,7 +1196,7 @@ function wlRegisterUnitGossip(gossip)
     end
 
     local id, kind = wlUnitGUID("npc");
-    
+
     if ((not id or not kind) and (gossip == "talentwiper" or gossip == "pettrainer")) then
         id, kind = unpack(wlTracker.gossipNpc);
     end
@@ -1233,12 +1233,12 @@ function wlEvent_PET_BAR_UPDATE(self)
     if wlCurrentMindControlTarget and wlCurrentMindControlTarget ~= id then
         wlCurrentMindControlTarget = nil;
     end
-    
+
     if wlTracker.spell and wlTracker.spell.time and wlTracker.spell.action == "MindControl" and wlTracker.spell.event == "SUCCEEDED" then
         if id and kind == "npc" and wlUnit[id] and id == wlTracker.spell.id then
             wlCurrentMindControlTarget = id;
         end
-        
+
         wlClearTracker("spell");
         wlTrackerClearedTime = wlGetTime();
     end
@@ -1279,7 +1279,7 @@ function wlEvent_MERCHANT_UPDATE(self)
     end
 
     local standing = select(2, wlUnitFaction("npc"));
-    
+
     local merchantFilters = GetMerchantFilter();
     SetMerchantFilter(LE_LOOT_FILTER_ALL);
     MerchantFrame_Update();
@@ -1298,7 +1298,7 @@ function wlEvent_MERCHANT_UPDATE(self)
         local name, icon, price, stack, numAvailable, _, _, extendedCost = GetMerchantItemInfo(slot);
         local id, subId = wlParseItemLink(GetMerchantItemLink(slot));
         if (id ~= 0 or ((currencyInfos[name] ~= nil) and (currencyInfos[name][2] == icon))) then
-            
+
             if (id == 0) then
                 id = currencyInfos[name][1];
                 subId = -2; -- this is a currency
@@ -1307,7 +1307,7 @@ function wlEvent_MERCHANT_UPDATE(self)
                     wlSeenDaily('i'..id)
                 end
             end
-            
+
             price = wlGetFullCost(price, standing);
 
             if extendedCost then
@@ -1402,7 +1402,7 @@ function wlEvent_MERCHANT_UPDATE(self)
     for link, numAvailable in pairs(merchantItemList) do
         wlUpdateVariable(wlUnit, id, "merchant", link, "max", numAvailable);
     end
-    
+
     SetMerchantFilter(merchantFilters);
     MerchantFrame_Update();
 end
@@ -1417,7 +1417,7 @@ function wlEvent_TRAINER_SHOW(self)
     if not id or kind ~= "npc" or not wlUnit[id] then
         return;
     end
-    
+
     local oldIndex = GetTrainerSelectionIndex();
 
     -- GetTrainerSelectionIndex can return nil.
@@ -1459,7 +1459,7 @@ function wlEvent_TRAINER_SHOW(self)
     SetTrainerServiceTypeFilter("available", fAvail and 1 or 0);
     SetTrainerServiceTypeFilter("unavailable", fUnavail and 1 or 0);
     SetTrainerServiceTypeFilter("used", fUsed and 1 or 0);
-    
+
     ClassTrainerFrame.selectedService = oldIndex >= 1 and oldIndex or 1;
     SelectTrainerService(oldIndex >= 1 and oldIndex or 1);
     ClassTrainerFrame.scrollFrame.scrollBar:SetValue((ClassTrainerFrame.selectedService-1)*CLASS_TRAINER_SKILL_HEIGHT);
@@ -1482,15 +1482,15 @@ end
 
 function wlCheckUnitForRep(guid, name)
     wlClearTracker("rep");
-        
+
     local id, kind = wlParseGUID(guid);
     local now = wlGetTime();
-    
+
     -- npc check
     if not id or id == 0 or kind ~= "npc" or not wlUnit[id] then
         return id, now;
     end
-    
+
     -- critter check
     wlGameTooltip:ClearLines();
     wlGameTooltip:SetHyperlink("unit:"..guid);
@@ -1510,13 +1510,13 @@ function wlCheckUnitForRep(guid, name)
     if numTaskPOIs > 0 then -- some bonus objectives reward rep
         return id, now;
     end
-    
+
     if wlNpcInfo[name] and wlNpcInfo[name].id == id and wlIsValidInterval(wlNpcInfo[name].time, now, 15000) then
         wlTracker.rep.time = now;
         wlTracker.rep.id = id;
         wlTracker.rep.flags = wlNpcInfo[name].isTrivial and 1 or 0;
     end
-    
+
     return id, now;
 end
 
@@ -1549,29 +1549,29 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
 
     elseif event == "SPELL_CAST_START" or event == "SPELL_CAST_SUCCESS" or event == "SPELL_AURA_APPLIED" then
         local unitId, kind = wlParseGUID(sourceGUID);
-        
+
         -- Spell ID is blacklisted
         if not spellId or WL_SPELL_BLACKLIST[spellId] then
             return;
         end
-        
+
         -- npc check
         if not unitId or unitId == 0 or kind ~= "npc" then
             return;
         end
-        
+
         if bit_band(WL_NPC_FLAGS, sourceFlags) ~= 0 and bit_band(WL_NPC_CONTROL_FLAGS, sourceFlags) == WL_NPC_CONTROL_FLAGS then
-        
+
             wlUpdateVariable(wlUnit, unitId, "spec", wlGetInstanceDifficulty(), "spell", spellId, "add", 1);
-            
+
         elseif not wlCurrentMindControlTarget and bit_band(WL_PET_FLAGS, sourceFlags) ~= 0 and bit_band(WL_PET_CONTROL_FLAGS, sourceFlags) == WL_PET_CONTROL_FLAGS then
-        
+
             -- spell_aura_applied is too dangerous for pets/guardians
             -- exit if the pet is a freshly tamed npc
             if event == "SPELL_AURA_APPLIED" or unitId == wlPetBlacklist then
                 return;
             end
-            
+
             local isBpet = false;
             if (bit_band(COMBATLOG_OBJECT_TYPE_PET, sourceFlags) == COMBATLOG_OBJECT_TYPE_PET) then
                 isBpet = true;
@@ -1582,15 +1582,15 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
                         break;
                     end
                 end
-            end    
+            end
             if (isBpet) then
                 return;
             end
-            
+
             wlUpdateVariable(wlUnit, unitId, "spec", wlGetInstanceDifficulty(), "spell", spellId, "add", 1);
 
         elseif bit_band(WL_MINDCONTROL_FLAGS, sourceFlags) == WL_MINDCONTROL_FLAGS and wlCurrentMindControlTarget == unitId and wlUnit[unitId] then
-        
+
             for i=1, NUM_PET_ACTION_SLOTS do
                 local petSpellName, _, _, _, _, autoCastAllowed = GetPetActionInfo(i);
 
@@ -1610,7 +1610,7 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             wlClearTracker("spell");
         end
 
-    elseif event == "UNIT_DIED" then -- or event == "UNIT_DESTROYED" 
+    elseif event == "UNIT_DIED" then -- or event == "UNIT_DESTROYED"
         local id, now = wlCheckUnitForRep(destGUID, destName);
         if bit_band(destFlags, WL_PURE_NPC_FLAGS) ~= WL_PURE_NPC_FLAGS then
             return;
@@ -1813,19 +1813,19 @@ end
 
 function wlEvent_QUEST_LOG_UPDATE(self)
     self:UnregisterEvent("QUEST_LOG_UPDATE");
-    
+
     if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
         return;
     end
 
     local eventId = wlGetNextEventId();
-    
+
     wlCurrentQuestObj = 3 - wlCurrentQuestObj; -- toggle: 1 <-> 2
-    
+
     for k, _ in ipairs(wlQuestObjectives[wlCurrentQuestObj]) do
         wlQuestObjectives[wlCurrentQuestObj][k] = nil;
     end
-    
+
     local foundQuests, numQuests, idx, objCounter = 0, select(2, C_QuestLog.GetNumQuestLogEntries()), 1, 0;
     while foundQuests <= numQuests do
         local title, isHeader, questId;
@@ -1837,9 +1837,9 @@ function wlEvent_QUEST_LOG_UPDATE(self)
         isHeader    = questInfo.isHeader;
         questId     = questInfo.questID;
         if not isHeader then
-        
+
             foundQuests = foundQuests + 1;
-        
+
             wlUpdateVariable(wlQuestLog, foundQuests, "title", "set", title);
             wlQuestLog[foundQuests].id = questId;
 
@@ -1847,7 +1847,7 @@ function wlEvent_QUEST_LOG_UPDATE(self)
             totalTime = totalTime or 0;
             elapsedTime = totalTime or 0;
             wlQuestLog[foundQuests].timer = ceil(((totalTime - elapsedTime) or 0) / 15) * 15;
-            wlQuestLog[foundQuests].sharable = C_QuestLog.IsPushableQuest(questId) or 0;    
+            wlQuestLog[foundQuests].sharable = C_QuestLog.IsPushableQuest(questId) or 0;
 
             local objInfos = C_QuestLog.GetQuestObjectives(questId);
             for objId=1, GetNumQuestLeaderBoards(idx) do
@@ -1855,9 +1855,9 @@ function wlEvent_QUEST_LOG_UPDATE(self)
                 local kind, done = objInfo.type, objInfo.finished;
 
                 if kind == "event" then
-                
+
                     objCounter = objCounter + 1;
-                    
+
                     wlUpdateVariable(wlQuestObjectives, wlCurrentQuestObj, objCounter, "questId", "set", questId);
                     wlQuestObjectives[wlCurrentQuestObj][objCounter].objId = objId;
                     wlQuestObjectives[wlCurrentQuestObj][objCounter].done = done;
@@ -1873,14 +1873,14 @@ function wlEvent_QUEST_LOG_UPDATE(self)
         end
         idx = idx + 1;
     end
-    
+
     if wlTracker.quest.time and wlTracker.quest.action == "accept" then
         local i = wlTableFind(wlQuestLog, function(a, v) return a.id and a.id == v; end, wlTracker.quest.id);
         if i and wlIsValidInterval(wlTracker.quest.time, wlGetTime(), 5000) then
             wlRegisterQuestAccept(i);
         end
     end
-    
+
 end
 
 
@@ -2617,7 +2617,7 @@ local wlSpells = {
     Scrapping = { GetSpellInfo(WL_SPELL_SCRAPPING) or "", WL_ITEM, 1 },
     Collecting = { GetSpellInfo(214766) or "", WL_OBJECT, 2 },
     -- BeastLore = { GetSpellInfo(1462) or "", WL_NPC, nil },
-    -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 }, 
+    -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 },
 };
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -2642,16 +2642,16 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
     local spellId = wlFindSpell(GetSpellInfo(spell));
 
     if spellId then
-    
+
         wlClearTracker("spell");
         local now = wlGetTime();
         wlTrackerClearedTime = now;
-        
+
         local npcName, npcUnit = GameTooltip:GetUnit();
         if not npcName and wlUnitName("target") == target then
             npcName, npcUnit = target, "target";
         end
-        
+
         local itemName, itemLink = GameTooltip:GetItem();
 
         -- npc
@@ -2662,7 +2662,7 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
             if npcName ~= target or name ~= target or not id then
                 return;
             end
-            
+
             wlTracker.spell.kind = "npc";
             wlTracker.spell.id = id;
             wlTracker.spell.name = name;
@@ -2680,7 +2680,7 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
                 wlTracker.spell.id = wlParseItemLink(wlSelectOne(2, GetItemInfo(target)));
                 wlTracker.spell.name = target;
 
-	    elseif spell == WL_SPELL_SCRAPPING then
+        elseif spell == WL_SPELL_SCRAPPING then
                 local scrappingItemLink = wlGetCurrentScrappingItemLink();
                 if scrappingItemLink ~= nil then
                     wlTracker.spell.id,_,_,_,_,_,_,wlTracker.spell.name = wlParseItemLink(scrappingItemLink);
@@ -2732,7 +2732,7 @@ function wlEvent_UNIT_SPELLCAST_SENT(self, unit, target, spellCast, spell)
         wlTracker.spell.time = now;
         wlTracker.spell.event = "SENT";
         wlTracker.spell.action = spellId;
-        
+
         -- associate unit_spellcast_* events
         wlSpellCastID = spell;
     end
@@ -2799,7 +2799,7 @@ function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spellCast, spellId)
     if wlAnvilSpells[spellId] then
         wlRegisterObject(WL_ANVIL_ID);
     end
-    
+
     if wlTracker.spell.time and wlTracker.spell.event == "SENT" and wlTracker.spell.action == wlFindSpell(GetSpellInfo(spellId)) then
         wlTracker.spell.event = "SUCCEEDED";
         wlTracker.spell.time = wlGetTime();
@@ -2828,7 +2828,7 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
     if not typeIdentifier or (typeIdentifier ~= "item" and typeIdentifier ~= "money" and typeIdentifier ~= "currency") then
         return;
     end
-    
+
     if wlLootToastSourceId or
         (wlTracker.spell and
          wlTracker.spell.action == "Opening" and
@@ -2838,17 +2838,17 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
             return;
         end
-            
+
         local _, _, mshome, msworld = GetNetStats();
         if mshome > WL_PING_MAX or msworld > WL_PING_MAX then
             return;
         end
-        
+
         if not wlCurrentLootToastEventId then
             wlCurrentLootToastEventId = wlGetNextEventId();
         end
-        local eventId = wlCurrentLootToastEventId;    
-    
+        local eventId = wlCurrentLootToastEventId;
+
         if WL_LOOT_TOAST_BOSS[wlLootToastSourceId] then
             wlTracker.spell.action = "Killing";
             wlTracker.spell.kind = "npc";
@@ -2871,8 +2871,8 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
             wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
             wlEvent[wlId][wlN][eventId].flags = 0;
         end
-        
-        
+
+
         local typeId = nil;
         local currencyId = nil;
         local numBonus = 0;
@@ -2884,15 +2884,15 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
             typeId = "currency";
             currencyId = wlParseCurrencyLink(itemLink);
         end
-        
-        wlEvent[wlId][wlN][eventId]["drop"] = wlEvent[wlId][wlN][eventId]["drop"] or {};    
-        wlEvent[wlId][wlN][eventId].fromLootToast = 1;    
+
+        wlEvent[wlId][wlN][eventId]["drop"] = wlEvent[wlId][wlN][eventId]["drop"] or {};
+        wlEvent[wlId][wlN][eventId].fromLootToast = 1;
         if typeId == "currency" then
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity, currencyId));
         else
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", #wlEvent[wlId][wlN][eventId]["drop"] + 1, "set", wlConcat(typeId, quantity, 0, numBonus > 0 and itemLink or nil));
         end
-        
+
     end
 end
 
@@ -2914,11 +2914,11 @@ function wlBagItemOnUse(link, bag, slot)
 
         return;
     end
-    
+
     if link and (not bag or not slot) then
         bag, slot = wlGuessBagAndSlot(link);
     end
-    
+
     local id = wlParseItemLink(link);
     if bag and slot then
         local openable = select(6, GetContainerItemInfo(bag, slot));
@@ -2966,9 +2966,9 @@ function wlGetLockedID()
         end
     end
     if wlLockedID ~= nil then
-	local ret = wlLockedID;
-	wlLockedID = nil;
-	return ret;
+        local ret = wlLockedID;
+        wlLockedID = nil;
+        return ret;
     end
     return nil;
 end
@@ -2991,15 +2991,15 @@ function wlEvent_LOOT_OPENED(self)
     if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
         return;
     end
-    
+
     local _, _, mshome, msworld = GetNetStats();
     if mshome > WL_PING_MAX or msworld > WL_PING_MAX then
         wlClearTracker("spell");
         return;
     end
-    
+
     wipe(wlLootedCurrenciesBlacklist);
-    
+
     local now = wlGetTime();
     local eventId = wlGetNextEventId();
     local fromFishing = IsFishingLoot();
@@ -3010,7 +3010,7 @@ function wlEvent_LOOT_OPENED(self)
             wlLootCooldown[k] = nil;
         end
     end
-    
+
     if wlTracker.spell.time then
 
         if (not wlIsValidInterval(wlTracker.spell.time or 0, now, 1000) and not fromFishing) or wlTracker.spell.event ~= "SUCCEEDED" or not wlSpells[wlTracker.spell.action][3] then
@@ -3022,11 +3022,11 @@ function wlEvent_LOOT_OPENED(self)
             wlClearTracker("spell");
             return;
         end
-        
+
         if wlTracker.spell.id then
             wlTracker.spell.name = nil;
         end
-        
+
         if wlTracker.spell.kind == "item" then
             -- double check ID for bag items, we're never too sure
             local lockedID = wlGetLockedID();
@@ -3039,14 +3039,14 @@ function wlEvent_LOOT_OPENED(self)
                 wlClearTracker("spell");
                 return;
             end
-            
+
             if wlLootCooldown[wlTracker.spell.id] then
                 wlClearTracker("spell");
                 return;
             end
             wlLootCooldown[wlTracker.spell.id] = now;
         end
-        
+
         wlTracker.spell.time = nil;
         wlTracker.spell.event = nil;
 
@@ -3064,11 +3064,11 @@ function wlEvent_LOOT_OPENED(self)
             if wlTrackerClearedTime >= now - 2000 then
                 return;
             end
-        
+
             wlTracker.spell.action = "Killing";
             wlTracker.spell.kind = "npc";
             wlTracker.spell.id = wlUnitGUID("target");
-            
+
 
         else -- pets
             return;
@@ -3116,7 +3116,7 @@ function wlEvent_LOOT_OPENED(self)
     if wlEvent[wlId][wlN][eventId].zone ~= nil then
         wlEvent[wlId][wlN][eventId].uiMapID = wlGetCurrentUiMapID();
     end
-    
+
     local flags = 0;
     local faction = UnitFactionGroup("player");
     if faction == "Alliance" then
@@ -3135,15 +3135,15 @@ function wlEvent_LOOT_OPENED(self)
     local i = 1;
     for slot=1, GetNumLootItems() do
         local lootSources = { GetLootSourceInfo(slot) };
-            
+
         local slotType = GetLootSlotType(slot);
         if slotType ~= LOOT_SLOT_NONE then
             local typeId = nil;
             local numBonus = 0;
             local currencyId = nil;
             local itemLink = GetLootSlotLink(slot);
-            
-            if slotType == LOOT_SLOT_ITEM then 
+
+            if slotType == LOOT_SLOT_ITEM then
                 typeId, _, _, _, _, _, _, _, _, _, _, numBonus = wlParseItemLink(itemLink);
                 -- for sourceIndex = 1, #lootSources, 2 do
                 --     print(("%s looted %d of %s"):format(wlParseGUID(lootSources[sourceIndex]), lootSources[sourceIndex + 1], GetItemInfo(itemId)));
@@ -3155,7 +3155,7 @@ function wlEvent_LOOT_OPENED(self)
                 currencyId = WL_CURRENCIES[currencyName:lower()];
 
                 typeId = "currency-" .. (currencyId or 0);
-                
+
                 tinsert(wlLootedCurrenciesBlacklist, {
                     ["currencyId"] = currencyId,
                     ["currencyQuantity"] = currencyQuantity,
@@ -3195,12 +3195,12 @@ function wlEvent_LOOT_OPENED(self)
             end
         end
     end
-    
+
     if objectId then
         wlEvent[wlId][wlN][eventId].id = objectId;
         wlRegisterObject(objectId);
     end
-    
+
     local isAoeLoot = (next(aoeNpcs) ~= nil) and 1 or 0;
     wlEvent[wlId][wlN][eventId].isAoeLoot = isAoeLoot;
 
@@ -3209,12 +3209,12 @@ function wlEvent_LOOT_OPENED(self)
         local currencyId = qtyInfo[3];
         if currencyId > 0 then
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", i, "set", wlConcat("currency", qty, currencyId));
-        else 
+        else
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", i, "set", wlConcat(typeId, qty, 0, qtyInfo[4]));
         end
         i = i + 1;
     end
-    
+
     for aoeGUID, dropInfo in pairs(aoeNpcs) do
         -- Enclosing loop for wlLootCooldown purposes
         repeat
@@ -3248,7 +3248,7 @@ function wlEvent_LOOT_OPENED(self)
             wlEvent[wlId][wlN][aoeEventId].id = unitId;
             -- Add Drops
             for typeId, qty in pairs(dropInfo) do
-                if qty[2] > 0 then -- Currency 
+                if qty[2] > 0 then -- Currency
                     wlUpdateVariable(wlEvent, wlId, wlN, aoeEventId, "drop", aoeCounter, "set", wlConcat("currency", qty[1], qty[2]));
                 else -- Money or Item
                     wlUpdateVariable(wlEvent, wlId, wlN, aoeEventId, "drop", aoeCounter, "set", wlConcat(typeId, qty[1], 0, qty[3]));
@@ -3259,7 +3259,7 @@ function wlEvent_LOOT_OPENED(self)
             break;
         until true
     end
-    
+
     -- wlDebugFrame:Show();
     -- wlPrint("-------------------------------");
     -- wlTablePrint(wlTracker.spell);
@@ -3276,14 +3276,14 @@ end
 function wlEvent_ITEM_LOCK_CHANGED(self, bag, slot)
 
     if not bag or not slot or not wlTracker.spell or not wlTracker.spell.id then
-	return;
+        return;
     end
 
     local itemLink = GetContainerItemLink(bag, slot);
     local itemID = wlParseItemLink(itemLink);
 
     if select(3, GetContainerItemInfo(bag, slot)) and wlTracker.spell.id == itemID then
-	wlLockedID = itemID;
+        wlLockedID = itemID;
     end
 
 end
@@ -3308,7 +3308,7 @@ end
 local LOOT_ITEM_PUSHED_SELF = LOOT_ITEM_PUSHED_SELF:gsub("%%s", "(.+)");
 local LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%s", "(.+)");
 LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%d", "(%%d+)");
-function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName) 
+function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName)
     local now = wlGetTime();
     if not wlTracker.spell.id or not wlTracker.spell.time or not wlIsValidInterval(wlTracker.spell.time or 0, now, 500) then
         return;
@@ -3439,7 +3439,7 @@ function wlCollect(userInitiated)
     end
 
     wlQueryTimePlayed();
-    
+
     wlScanAppearances()
     wlScanToys()
     wlScanMounts()
@@ -3488,12 +3488,12 @@ end
 
 function wlGetAddedCurrency(delta)
     for k, v in pairs(delta.changed) do
-        if v > 0 then 
+        if v > 0 then
             return k, v;
         end
     end
     for k, v in pairs(delta.added) do
-        if v > 0 then 
+        if v > 0 then
             return k, v;
         end
     end
@@ -3514,26 +3514,26 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
 
             -- make sure we have something to report
             if currencyId and currencyAmount then
-            
+
                 -- make sure there's no interference with looted currencies
                 for _, lootedCurrencyInfo in ipairs(wlLootedCurrenciesBlacklist) do
                     if lootedCurrencyInfo.currencyId == currencyId and lootedCurrencyInfo.currencyQuantity == currencyAmount then
                         return;
                     end
                 end
-            
+
                 local isInstance, instanceType = IsInInstance();
                 if isInstance == 0 or (instanceType ~= "party" and instanceType ~= "raid") then
                     return;
                 end
-                
+
                 -- make sure the player isn't capped
                 local cInfo = C_CurrencyInfo.GetCurrencyInfo(currencyId);
                 local currencyName, currentQ, currencyIcon, currencyEarnedThisWeek, currencyEarnablePerWeek, currencyCap, currencyIsDiscovered = cInfo.name, cInfo.quantity, cInfo.iconFileID, cInfo.quantityEarnedThisWeek, cInfo.maxWeeklyQuantity, cInfo.maxQuantity, cInfo.discovered;
                 if currentQ == currencyCap or (currencyEarnablePerWeek ~= 0 and currencyEarnedThisWeek == currencyEarnablePerWeek) then
                     return;
                 end
-                
+
                 -- check if the currency combo id+amount is a reward from the random dungeon
                 if instanceType == "party" then
                     local uiMapID = C_Map.GetBestMapForUnit("player");
@@ -3558,7 +3558,7 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                         return;
                     end
                 end
-                
+
                 -- check if the player has wintergrasp buff which gives honor WoTlk Dungeons
                 local buffName = AuraUtil.FindAuraByName(GetSpellInfo(57940), "player");
                 if buffName and currencyId == 392 then
@@ -3577,7 +3577,7 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                     end
                     currencyAmount = floor((currencyAmount/valorMod) + 0.5);
                 end
-            
+
                 local eventId = wlGetNextEventId();
 
                 wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
@@ -3603,13 +3603,13 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
             end
         end
     end
-    
+
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlScanCurrencies()
-    
+
     local oldScannedCurrencies = wlPlayerCurrencies;
     if type(oldScannedCurrencies) ~= "table" then
         oldScannedCurrencies = {};
@@ -3793,11 +3793,11 @@ end
 function wlScanProfessionWindow(...)
     -- do some sanity checking
     local parameterCount = select('#', ...)
-    if parameterCount <= 0 then 
+    if parameterCount <= 0 then
         return;
     end
     for funcIndex = 1, parameterCount do
-        if "function" ~= type(select(funcIndex, ...)) then 
+        if "function" ~= type(select(funcIndex, ...)) then
             return;
         end
     end
@@ -4280,11 +4280,11 @@ function wlGetLocation()
     end
 
     local x, y = GetPlayerMapPosition("player");
-    
+
     if not x or not y then
         x, y = 0, 0;
     end
-    
+
     return zone, floor(x * 1000 + 0.5), floor(y * 1000 + 0.5), uiMapID;
 end
 
@@ -4555,7 +4555,7 @@ local wlMinimapShapes = {
 function wlUpdateMiniMapButtonPosition(button)
     local angle = math.rad(wlSetting and wlSetting.minimapPos or button.minimapPos or 225);
     local x, y, q = math.cos(angle), math.sin(angle), 1;
-    if x < 0 then 
+    if x < 0 then
         q = q + 1;
     end
     if y > 0 then
@@ -4669,7 +4669,7 @@ function wlCreateFrames()
     icon:SetPoint("TOPLEFT", 6, -6);
     button.icon = icon;
     button.isMouseDown = false;
-    
+
     icon.wlUpdateMinimapButtonCoord = wlUpdateMinimapButtonCoord;
     icon:wlUpdateMinimapButtonCoord();
 
@@ -4681,10 +4681,10 @@ function wlCreateFrames()
     button:SetScript("OnMouseDown", wlMiniMapOnMouseDown);
     button:SetScript("OnMouseUp", wlMiniMapOnMouseUp);
     button:Hide();
-    
+
     local panel = CreateFrame("Frame", "wlOptionsPanel", InterfaceOptionsFramePanelContainer);
     panel.name = "Wowhead Looter";
-    
+
     local titlebar = CreateFrame("Frame", nil, panel);
     titlebar:SetPoint("TOPLEFT", panel, "TOPLEFT");
     titlebar:SetPoint("TOPRIGHT", panel, "TOPRIGHT");
@@ -4693,12 +4693,12 @@ function wlCreateFrames()
     titlebar.frameTitle:SetJustifyH("CENTER");
     titlebar.frameTitle:SetPoint("TOP", titlebar, "TOP", 0, -20);
     titlebar.frameTitle:SetTextColor(1, 0, 0, 1);
-    titlebar.frameTitle:SetText("|TInterface\\AddOns\\+Wowhead_Looter\\wowhead-logo-64:32:32:0:-3|t"..WL_NAME);    
+    titlebar.frameTitle:SetText("|TInterface\\AddOns\\+Wowhead_Looter\\wowhead-logo-64:32:32:0:-3|t"..WL_NAME);
     titlebar.version = titlebar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
     titlebar.version:SetJustifyH("CENTER");
     titlebar.version:SetPoint("TOP", titlebar, "TOP", 0, -46);
     titlebar.version:SetText("v"..WL_VERSION);
-    
+
     --[[local header = CreateFrame("Frame", nil, titlebar);
     header:SetHeight(18);
     header:SetPoint("TOPLEFT", titlebar, "BOTTOMLEFT");
@@ -4721,7 +4721,7 @@ function wlCreateFrames()
     header.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border");
     header.right:SetTexCoord(0.81, 0.94, 0.5, 1);
     header.left:SetPoint("RIGHT", header.label, "LEFT", -5, 0);]]
-    
+
     --[[local completionButton = CreateFrame("Button", nil, header, "UIPanelButtonTemplate");
     completionButton:SetText(WL_OPTIONS_COLLECT);
     completionButton:SetWidth(140);
@@ -4754,12 +4754,12 @@ function wlCreateFrames()
     header2.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border");
     header2.right:SetTexCoord(0.81, 0.94, 0.5, 1);
     header2.left:SetPoint("RIGHT", header2.label, "LEFT", -5, 0);
-    
+
     local locationCheckbox = CreateFrame("CheckButton", "wllocTooltipCheckbox", header2, "InterfaceOptionsCheckButtonTemplate");
     _G[locationCheckbox:GetName().."Text"]:SetText(WL_OPTIONS_TOOLTIP);
     locationCheckbox.tooltipText = WL_DESC_LOCATION;
     locationCheckbox:SetPoint("TOPLEFT", header2, "BOTTOMLEFT", 10, -10);
-    locationCheckbox:SetScript("OnClick", function(self, button, down) 
+    locationCheckbox:SetScript("OnClick", function(self, button, down)
         wlSetting.locTooltip = locationCheckbox:GetChecked() and true or false;
         if wlSetting.locTooltip then
             wlLocTooltipFrame:Show();
@@ -4772,7 +4772,7 @@ function wlCreateFrames()
     _G[locationCheckbox2:GetName().."Text"]:SetText(WORLD_MAP);
     locationCheckbox2.tooltipText = WL_DESC_LOCATION_WORLDMAP;
     locationCheckbox2:SetPoint("LEFT", locationCheckbox:GetName().."Text", "RIGHT", 20, 0);
-    locationCheckbox2:SetScript("OnClick", function(self, button, down) 
+    locationCheckbox2:SetScript("OnClick", function(self, button, down)
         wlSetting.locMap = locationCheckbox2:GetChecked() and true or false;
         if wlSetting.locMap then
             wlLocMapFrame:Show();
@@ -4787,10 +4787,10 @@ function wlCreateFrames()
     locationResetButton:SetWidth(80);
     locationResetButton:SetHeight(22);
     locationResetButton:SetPoint("TOPLEFT", locationCheckbox, "BOTTOMLEFT");
-    locationResetButton:SetScript("OnClick", function(self, button, down) 
+    locationResetButton:SetScript("OnClick", function(self, button, down)
         wlFrameReset(wlLocTooltipFrame);
     end);
-    
+
     local header3 = CreateFrame("Frame", nil, header2);
     header3:SetHeight(18);
     header3:SetPoint("TOPLEFT", header2, "BOTTOMLEFT", 0, -70);
@@ -4813,12 +4813,12 @@ function wlCreateFrames()
     header3.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border");
     header3.right:SetTexCoord(0.81, 0.94, 0.5, 1);
     header3.left:SetPoint("RIGHT", header3.label, "LEFT", -5, 0);
-    
+
     local npcCheckbox = CreateFrame("CheckButton", "wlidTooltipCheckbox", header3, "InterfaceOptionsCheckButtonTemplate");
     _G[npcCheckbox:GetName().."Text"]:SetText(WL_OPTIONS_TOOLTIP);
     npcCheckbox.tooltipText = WL_DESC_NPCID;
     npcCheckbox:SetPoint("TOPLEFT", header3, "BOTTOMLEFT", 10, -10);
-    npcCheckbox:SetScript("OnClick", function(self, button, down) 
+    npcCheckbox:SetScript("OnClick", function(self, button, down)
         wlSetting.idTooltip = npcCheckbox:GetChecked() and true or false;
         if wlSetting.idTooltip then
             wlIdTooltipFrame:Show();
@@ -4833,10 +4833,10 @@ function wlCreateFrames()
     npcResetButton:SetWidth(80);
     npcResetButton:SetHeight(22);
     npcResetButton:SetPoint("TOPLEFT", npcCheckbox, "BOTTOMLEFT");
-    npcResetButton:SetScript("OnClick", function(self, button, down) 
+    npcResetButton:SetScript("OnClick", function(self, button, down)
         wlFrameReset(wlIdTooltipFrame);
     end);
-    
+
     local header4 = CreateFrame("Frame", nil, header3);
     header4:SetHeight(18);
     header4:SetPoint("TOPLEFT", header3, "BOTTOMLEFT", 0, -70);
@@ -4859,11 +4859,11 @@ function wlCreateFrames()
     header4.right:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border");
     header4.right:SetTexCoord(0.81, 0.94, 0.5, 1);
     header4.left:SetPoint("RIGHT", header4.label, "LEFT", -5, 0);
-        
+
     local minimapCheckbox = CreateFrame("CheckButton", "wlminimapCheckbox", header4, "InterfaceOptionsCheckButtonTemplate");
     _G[minimapCheckbox:GetName().."Text"]:SetText(WL_OPTIONS_MINIMAP_SHOW);
     minimapCheckbox:SetPoint("TOPLEFT", header4, "BOTTOMLEFT", 10, -10);
-    minimapCheckbox:SetScript("OnClick", function(self, button, down) 
+    minimapCheckbox:SetScript("OnClick", function(self, button, down)
         wlSetting.minimap = minimapCheckbox:GetChecked() and true or false;
         if wlSetting.minimap then
             wlMinimapButton:Show();
@@ -4872,16 +4872,16 @@ function wlCreateFrames()
         end
         wlMessage(("%s: %s"):format(WL_NAME, (WL_MINIMAP):format(wlEnabledDisabled(wlSetting.minimap))), true);
     end);
-    
+
     local resetAllButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate");
     resetAllButton:SetText(WL_OPTIONS_RESET_ALL);
     resetAllButton:SetWidth(140);
     resetAllButton:SetHeight(24);
     resetAllButton:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 10, 10);
-    resetAllButton:SetScript("OnClick", function(self, button, down) 
+    resetAllButton:SetScript("OnClick", function(self, button, down)
         StaticPopup_Show("WL_RESET_CONFIRM");
     end);
-    
+
     InterfaceOptions_AddCategory(panel);
 end
 
@@ -4889,13 +4889,13 @@ function wl_OnLoad(self)
     CreateFrame("Frame", "wlUpdateFrame", UIParent);
     wlUpdateFrame:SetScript("OnUpdate", wl_OnUpdate);
     wlUpdateFrame:Show();
-    
+
     wlCreateFrames();
 
     for event, _ in pairs(wlEvents) do
         self:RegisterEvent(event);
     end
-    
+
     StaticPopupDialogs["WL_RESET_CONFIRM"] = {
         text = WL_RESET_CONFIRM_TEXT,
         button1 = YES,
@@ -4934,10 +4934,10 @@ local uploadReminder = false;
 local wlTimeSinceLastUpdate = 0;
 local WL_ONUPDATE_THROTTLE = 0.2;
 function wl_OnUpdate(self, elapsed)
-    wlTimeSinceLastUpdate = wlTimeSinceLastUpdate + elapsed;     
+    wlTimeSinceLastUpdate = wlTimeSinceLastUpdate + elapsed;
 
     if wlTimeSinceLastUpdate >= WL_ONUPDATE_THROTTLE then
-    
+
         local now = wlGetTime();
 
         for name, timeout in pairs(wlTimers) do
@@ -4946,7 +4946,7 @@ function wl_OnUpdate(self, elapsed)
 
                 if name == "autoCollect" then
                     wlCollect();
-                    
+
                 elseif name == "clearLootToastSource" then
                     wlLootToastSourceId = nil;
                     wlCurrentLootToastEventId = nil;
@@ -4967,7 +4967,7 @@ function wl_OnUpdate(self, elapsed)
                         if not uploadReminder then
                             uploadReminder = true;
                             wlMessage(("%s: %s"):format(WL_NAME, WL_UPLOAD_REMINDER), true);
-                        end    
+                        end
                         wlMsgCollected = "";
                     end
 
@@ -4976,20 +4976,20 @@ function wl_OnUpdate(self, elapsed)
                 end
             end
         end
-        
+
         wlTimeSinceLastUpdate = 0;
-        
+
         -- filter out unwanted NPC location collection
         if not UnitExists("target") or UnitPlayerControlled("target") or not wlPlayerCanHaveTap("target") or not wlUnitIsClose("target") or wlIsDrunk then
             return;
         end
-        
+
         local id, kind = wlUnitGUID("target");
 
         if id and kind == "npc" then
             wlRegisterUnitLocation(id, UnitLevel("target"));
         end
-        
+
     end
 end
 
@@ -5036,10 +5036,10 @@ function wlParseCommand(cmd)
     --[[elseif param1:match("^collect$") then
         wlTimers["autoCollect"] = nil; -- Cancel auto-collect
         wlCollect(true);]]
-        
+
     elseif param1:match("^reset$") then
         StaticPopup_Show("WL_RESET_CONFIRM");
-        
+
     elseif param1:match("minimap") then
         wlFrameToggle(wlMinimapButton, WL_MINIMAP, "minimap");
 
@@ -5054,7 +5054,7 @@ end
 
 function wlFrameToggle(frame, msg, savename)
     wlSetting[savename] = not wlSetting[savename];
-    
+
     _G["wl"..savename.."Checkbox"]:SetChecked(wlSetting[savename]);
 
     if wlSetting[savename] then
@@ -5114,7 +5114,7 @@ function wlLocMapFrame_OnUpdate()
     else
         cursorStr = ("%s%.1f, %.1f"):format(cursorStr, cX, cY);
     end
-    
+
     wlLocMapFrameText:SetText(playerStr.."|r  -  "..cursorStr.."|r");
 end
 
@@ -5167,7 +5167,7 @@ end
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 function wlMessage(msg, userInitiated)
-    if not msg then 
+    if not msg then
         return;
     end
 
@@ -5552,7 +5552,7 @@ function wlGetFullCost(cost, standing)
     if not cost or cost == 0 then
         return 0;
     end
-    
+
     local costMod = 1;
     if IsSpellKnown(83964) then -- bartering guild lvl 24
         costMod = costMod - 0.1;
@@ -5563,7 +5563,7 @@ function wlGetFullCost(cost, standing)
     elseif standing and WL_REP_DISCOUNT[standing] then
         costMod = costMod - WL_REP_DISCOUNT[standing];
     end
-    
+
     return floor(cost/costMod);
 end
 
@@ -5875,25 +5875,25 @@ function wlHook()
 
     wlDefaultGetQuestReward = GetQuestReward;
     GetQuestReward = wlGetQuestReward;
-    
+
     wlDefaultReloadUI = ReloadUI;
     ReloadUI = wlReloadUI;
-    
+
     wlDefaultConsoleExec = ConsoleExec;
     ConsoleExec = wlConsoleExec;
-    
+
     hooksecurefunc("UseItemByName", function(name, target)
         if not target then
             wlBagItemOnUse(wlSelectOne(2, GetItemInfo(name)));
         end
     end);
-    
+
     hooksecurefunc("UseContainerItem", function(bag, slot, target)
         if not target then
             wlBagItemOnUse(GetContainerItemLink(bag, slot), bag, slot);
         end
     end);
-    
+
     if (PlaceAuctionBid) then
         hooksecurefunc("PlaceAuctionBid", wlPlaceAuctionBid);
     end
@@ -5937,7 +5937,7 @@ function wlGetItemDurability()
             end
         end
     end
-    
+
     for i=0, 19 do
         local itemID = GetInventoryItemID("player", i);
         local _, maxDura = GetInventoryItemDurability(i);
@@ -6009,8 +6009,8 @@ function wlGetCurrentUiMapID()
     else
         uiMapID = C_Map.GetBestMapForUnit("player") or WorldMapFrame:GetMapID();
     end
-    
+
     return uiMapID;
 end
-    
+
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
