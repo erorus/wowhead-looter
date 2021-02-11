@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: January 11, 2021        --
+--    Updated: February 7, 2021        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -2975,10 +2975,24 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+local wlManualLootOpened = false;
+local wlManualLootLooted = false;
+
+-- Event callback for LOOT_CLOSED, called when the loot popup closes.
 function wlEvent_LOOT_CLOSED(self)
-    wlClearTracker("spell");
+    if (not wlManualLootOpened or wlManualLootLooted) then
+        wlClearTracker("spell");
+    end
+
+    wlManualLootOpened = false;
 end
 
+-- Event callback for LOOT_SLOT_CLEARED, called when a slot in the loot popup is cleared.
+function wlEvent_LOOT_SLOT_CLEARED(self, slot)
+    if (wlManualLootOpened) then
+        wlManualLootLooted = true;
+    end
+end
 
 function wlEvent_BAG_UPDATE_DELAYED()
     wlCurrentLootToastEventId = nil;
@@ -2986,7 +3000,12 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_LOOT_OPENED(self)
+-- Event callback for LOOT_OPENED, called when the loot pops up.
+function wlEvent_LOOT_OPENED(self, autoLoot, isFromItem)
+    if (not autoLoot) then
+        wlManualLootOpened = true;
+        wlManualLootLooted = false;
+    end
 
     if not wlEvent or not wlId or not wlEvent[wlId] or not wlN or not wlEvent[wlId][wlN] then
         return;
@@ -4446,6 +4465,7 @@ local wlEvents = {
     -- drops
     LOOT_OPENED = wlEvent_LOOT_OPENED,
     LOOT_CLOSED = wlEvent_LOOT_CLOSED,
+    LOOT_SLOT_CLEARED = wlEvent_LOOT_SLOT_CLEARED,
     SHOW_LOOT_TOAST = wlEvent_SHOW_LOOT_TOAST,
     SPELL_CONFIRMATION_PROMPT = wlEvent_SPELL_CONFIRMATION_PROMPT,
     CHAT_MSG_ADDON = wlEvent_CHAT_MSG_ADDON,
