@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: February 7, 2021        --
+--    Updated: February 28, 2021       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -594,6 +594,13 @@ local WL_BASTION_STEWARD_OF_THE_DAY = {
     ['42.2,27.7'] = 171113, -- Angeliki
     ['52.9,9.2']  = 171132, -- Covinkles
     ['71.2,37.6'] = 171330, -- Giannakis
+}
+
+local WL_VENTHYR_BROKEN_MIRROR_TRACKING_QUESTS = {
+    61818,61833, 61826,61835, 61822,61834,
+    61819,61836, 61823,61837, 61827,61838,
+    61817,61830, 61821,61831, 61825,61832,
+    61820,61828, 61824,61829, 59236,60297,
 }
 
 -- Speed optimizations
@@ -4370,6 +4377,22 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+
+--[[
+-- Check for completed Venthyr broken mirror tracking quests
+]]
+function wlCheckVenthyrBrokenMirrorQuests()
+    if C_Map.GetBestMapForUnit("player") ~= 1525 then
+        return;
+    end
+
+    for _, questId in ipairs(WL_VENTHYR_BROKEN_MIRROR_TRACKING_QUESTS) do
+        if (C_QuestLog.IsQuestFlaggedCompleted(questId)) then
+            wlSeenDaily(questId);
+        end
+    end
+end
+
 --[[
 -- Event handler for VIGNETTES_UPDATED, which fires after the game client gathered vignettes in the current zone.
 ]]
@@ -4382,6 +4405,7 @@ end
 function wlEvent_ZONE_CHANGED()
     wlLocTooltipFrame_OnUpdate();
     wlCheckTorghastWings();
+    wlCheckVenthyrBrokenMirrorQuests();
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
