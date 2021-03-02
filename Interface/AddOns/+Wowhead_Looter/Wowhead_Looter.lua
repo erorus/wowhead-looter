@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.0.2                     --
---    Updated: February 28, 2021       --
+--    Updated: March 1, 2021           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -4379,10 +4379,12 @@ end
 
 
 --[[
--- Check for completed Venthyr broken mirror tracking quests
+-- Check for completed Venthyr broken mirror tracking quests.
 ]]
 function wlCheckVenthyrBrokenMirrorQuests()
-    if C_Map.GetBestMapForUnit("player") ~= 1525 then
+    -- If we're not in Revendreth or Sinfall, there's nothing to check.
+    local mapId = C_Map.GetBestMapForUnit("player");
+    if (mapId ~= 1525 and mapId ~= 1699) then
         return;
     end
 
