@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 9.0.5                     --
---    Updated: March 9, 2021           --
+--    Patch: 9.1.0                     --
+--    Updated: June 29, 2021           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 90005;
+local WL_VERSION = 90100;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -4172,12 +4172,13 @@ function wlScanAppearances()
     -- enable filter if wardrobe frame is invisible.
     local enableFilter = not WardrobeCollectionFrame or not WardrobeCollectionFrame:IsVisible();
 
-    for colType = 1, Enum.TransmogCollectionTypeMeta.NumValues do
+    for colType = Enum.TransmogCollectionTypeMeta.MinValue, Enum.TransmogCollectionTypeMeta.MaxValue do
         local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
-
-        for k, o in pairs(app) do
-            if o.isCollected and not o.isHideVisual then
-                tinsert(appearanceTable, o.visualID .. ':' .. colType)
+        if (app) then
+            for k, o in pairs(app) do
+                if o.isCollected and not o.isHideVisual then
+                    tinsert(appearanceTable, o.visualID .. ':' .. colType)
+                end
             end
         end
     end
