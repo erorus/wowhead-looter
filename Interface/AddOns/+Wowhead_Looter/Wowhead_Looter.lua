@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.0                     --
---    Updated: June 29, 2021           --
+--    Updated: June 30, 2021           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -277,6 +277,23 @@ local WL_LOOT_TOAST_NOSPELL =
     [181741] = true,
     [181732] = true,
     [181733] = true,
+
+    -- 9.1
+    [185972] = true,
+    [186529] = true,
+    [186530] = true,
+    [186531] = true,
+    [186533] = true,
+    [187575] = true,
+    [187576] = true,
+    [187577] = true,
+    [186196] = true,
+    [185992] = true,
+    [187543] = true,
+    [185990] = true,
+    [185991] = true,
+    [185993] = true,
+    [187551] = true,
 };
 
 local WL_REP_MODS = {
