@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.0                     --
---    Updated: July 9, 2021            --
+--    Updated: July 17, 2021           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -185,6 +185,8 @@ local WL_LOOT_TOAST_BAGS = {
     [253747] = 152922,  -- brittle krokul chest
     [254385] = 152650,  -- scuffed krokul cache
 
+    -- 9.1
+    [356539] = 187187, -- Korthian Armaments
 
 };
 
