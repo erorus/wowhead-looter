@@ -554,6 +554,9 @@ local WL_DAILY_NPCS = {
 
     -- Night Fae Amphitheater
     '166135', '166138', '166139', '166140', '166142', '166145', '166146',
+
+    -- Notable Korthia Rares
+    '177336', '179768', '179108', '180160',
 };
 
 -- dungeon difficulty -> npcs we're looking for in that difficulty
@@ -597,6 +600,15 @@ local WL_DAILY_BUT_NOT_REALLY = {
     60255, -- A Valuable Find: The Other Side
     60250, -- A Valuable Find: Theater of Pain
     60254, -- A Valuable Find: Tirna Scithe
+
+    -- Covenant Assault achievement-related
+    63846, -- The Ember Count
+    63773, -- You and What Army
+    63545, -- Putting a Plan Together
+    63972, -- Just Don't Ask Me to Spell It
+    63951, -- A Shady Place
+    63836, -- Fangcrack's Fan Club
+    63837, -- A Tea for Every Occasion
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
