@@ -361,13 +361,12 @@
 </Frame>
 
 
-<Frame name="wlLocMapFrame" frameStrata="HIGH" movable="false" enableMouse="false" parent="WorldMapFrame" hidden="true" inherits="BackdropTemplate">
+<Frame name="wlLocMapFrame" frameStrata="HIGH" movable="false" enableMouse="false" parent="WorldMapFrame" hidden="true" inherits="TooltipBackdropTemplate">
     <Size>
         <AbsDimension x="1" y="28" />
     </Size>
 
     <KeyValues>
-        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
         <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
         <KeyValue key="backdropColorAlpha" value="0.75" type="number"/>
     </KeyValues>
@@ -394,7 +393,7 @@
 </Frame>
 
 
-<Frame name="wlLocTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
+<Frame name="wlLocTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="TooltipBackdropTemplate">
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -413,7 +412,6 @@
     </Anchors>
 
     <KeyValues>
-        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
         <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
         <KeyValue key="backdropColorAlpha" value="0.5" type="number"/>
     </KeyValues>
@@ -449,7 +447,7 @@
 </Frame>
 
 
-<Frame name="wlIdTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="BackdropTemplate">
+<Frame name="wlIdTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="TooltipBackdropTemplate">
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -468,7 +466,6 @@
     </Anchors>
 
     <KeyValues>
-        <KeyValue key="backdropInfo" value="BACKDROP_TOOLTIP_16_16_5555" type="global"/>
         <KeyValue key="backdropColor" value="BLACK_FONT_COLOR" type="global"/>
         <KeyValue key="backdropColorAlpha" value="0.5" type="number"/>
     </KeyValues>

@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.5                     --
---    Updated: November 2, 2021        --
+--    Updated: November 4, 2021        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
