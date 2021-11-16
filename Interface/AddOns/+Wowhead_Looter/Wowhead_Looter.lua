@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.5                     --
---    Updated: November 4, 2021        --
+--    Updated: November 15, 2021       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -65,6 +65,9 @@ local WL_LOOT_TOAST_BOSS = {
     [244182] = 121913, -- emeriss
     [244184] = 121821, -- lethon
     [244183] = 121912, -- ysondre
+};
+local WL_LOOT_TOAST_BOSSES = {
+    [167749] = true,
 };
 local WL_LOOT_TOAST_BAGS = {
     [142397] = 98134,     -- Heroic Cache of Treasures
@@ -2871,7 +2874,17 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         return;
     end
 
-    if wlLootToastSourceId or
+    local now = wlGetTime();
+    local isToastBoss = false;
+
+    if (wlMostRecentEliteKilled and wlMostRecentEliteKilled.id and
+        wlMostRecentEliteKilled.timeOfDeath and wlConsecutiveNpcKills == 0 and
+        now <= (wlMostRecentEliteKilled.timeOfDeath + 2000) and
+        WL_LOOT_TOAST_BOSSES[tonumber(wlMostRecentEliteKilled.id)]) then
+        isToastBoss = true;
+    end
+
+    if wlLootToastSourceId or isToastBoss or
         (wlTracker.spell and
          wlTracker.spell.action == "Opening" and
          wlTracker.spell.kind == "item" and
@@ -2891,10 +2904,10 @@ function wlEvent_SHOW_LOOT_TOAST(self, typeIdentifier, itemLink, quantity, specI
         end
         local eventId = wlCurrentLootToastEventId;
 
-        if WL_LOOT_TOAST_BOSS[wlLootToastSourceId] then
+        if WL_LOOT_TOAST_BOSS[wlLootToastSourceId] or isToastBoss then
             wlTracker.spell.action = "Killing";
             wlTracker.spell.kind = "npc";
-            wlTracker.spell.id = WL_LOOT_TOAST_BOSS[wlLootToastSourceId];
+            wlTracker.spell.id = isToastBoss and wlMostRecentEliteKilled.id or WL_LOOT_TOAST_BOSS[wlLootToastSourceId];
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
             wlEvent[wlId][wlN][eventId].what = "loot";
             wlTableCopy(wlEvent[wlId][wlN][eventId], wlTracker.spell);
