@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.5                     --
---    Updated: November 15, 2021       --
+--    Updated: December 15, 2021       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -67,7 +67,51 @@ local WL_LOOT_TOAST_BOSS = {
     [244183] = 121912, -- ysondre
 };
 local WL_LOOT_TOAST_BOSSES = {
+    [60491] = true,
+    [62346] = true,
+    [69099] = true,
+    [69161] = true,
+    [83746] = true,
+    [99929] = true,
+    [106984] = true,
+    [107544] = true,
+    [108678] = true,
+    [108829] = true,
+    [108879] = true,
+    [109331] = true,
+    [109943] = true,
+    [110321] = true,
+    [110378] = true,
+    [112350] = true,
+    [117239] = true,
+    [117303] = true,
+    [117470] = true,
+    [132253] = true,
+    [132701] = true,
+    [136385] = true,
+    [137374] = true,
+    [138122] = true,
+    [138794] = true,
+    [140163] = true,
+    [140252] = true,
+    [144946] = true,
+    [152671] = true,
+    [152697] = true,
+    [154638] = true,
+    [160970] = true,
+    [167524] = true,
+    [167525] = true,
+    [167526] = true,
+    [167527] = true,
+    [178958] = true,
+    [115767] = true,
+    [118289] = true,
+    [121975] = true,
+    [122135] = true,
+    [124828] = true,
+    [144796] = true,
     [167749] = true,
+    [175726] = true,
 };
 local WL_LOOT_TOAST_BAGS = {
     [142397] = 98134,     -- Heroic Cache of Treasures
