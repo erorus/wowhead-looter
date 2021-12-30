@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.1.5                     --
---    Updated: December 15, 2021       --
+--    Updated: December 29, 2021       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -100,7 +100,7 @@ local WL_LOOT_TOAST_BOSSES = {
     [154638] = true,
     [160970] = true,
     [167524] = true,
-    [167525] = true,
+    [173104] = true,
     [167526] = true,
     [167527] = true,
     [178958] = true,
