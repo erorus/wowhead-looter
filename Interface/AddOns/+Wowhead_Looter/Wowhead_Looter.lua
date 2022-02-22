@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 9.1.5                     --
---    Updated: December 29, 2021       --
+--    Patch: 9.2.0                     --
+--    Updated: February 22, 2021       --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 90105;
+local WL_VERSION = 90200;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -86,6 +86,7 @@ local WL_LOOT_TOAST_BOSSES = {
     [117239] = true,
     [117303] = true,
     [117470] = true,
+    [122104] = true,
     [132253] = true,
     [132701] = true,
     [136385] = true,
@@ -347,6 +348,19 @@ local WL_LOOT_TOAST_NOSPELL =
     [187278] = true,
     [187029] = true,
     [186650] = true,
+
+    -- 9.2
+    [187780] = true,
+    [187781] = true,
+    [187787] = true,
+    [190178] = true,
+    [190382] = true,
+    [190610] = true,
+    [190655] = true,
+    [190656] = true,
+    [190823] = true,
+    [191040] = true,
+    [191041] = true,
 };
 
 local WL_REP_MODS = {
@@ -604,6 +618,9 @@ local WL_DAILY_NPCS = {
 
     -- Notable Korthia Rares
     '177336', '179768', '179108', '180160',
+
+    -- Notable Zereth Mortis Rares
+    '184409', '183747', '181360', '178963', '183748', '183596', '183722', '183737', '178563', '179006', '182318',
 };
 
 -- dungeon difficulty -> npcs we're looking for in that difficulty
