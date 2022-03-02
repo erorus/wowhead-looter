@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.2.0                     --
---    Updated: February 22, 2021       --
+--    Updated: March 1, 2021           --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -113,6 +113,7 @@ local WL_LOOT_TOAST_BOSSES = {
     [144796] = true,
     [167749] = true,
     [175726] = true,
+    [182466] = true,
 };
 local WL_LOOT_TOAST_BAGS = {
     [142397] = 98134,     -- Heroic Cache of Treasures
@@ -361,6 +362,7 @@ local WL_LOOT_TOAST_NOSPELL =
     [190823] = true,
     [191040] = true,
     [191041] = true,
+    [191139] = true,
 };
 
 local WL_REP_MODS = {
