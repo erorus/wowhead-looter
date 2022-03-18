@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.2.0                     --
---    Updated: March 1, 2021           --
+--    Updated: March 17, 2021          --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -363,6 +363,11 @@ local WL_LOOT_TOAST_NOSPELL =
     [191040] = true,
     [191041] = true,
     [191139] = true,
+};
+
+local WL_LOOT_COUNT_KILLED_NPCS =
+{
+    [182120] = true,
 };
 
 local WL_REP_MODS = {
@@ -745,21 +750,14 @@ end
 
 local GetProgressText = GetProgressText;
 local GetQuestID = GetQuestID;
-local GetQuestLogLeaderBoard = GetQuestLogLeaderBoard;
-local GetQuestLogPushable = GetQuestLogPushable;
-local GetQuestLogSelection = GetQuestLogSelection;
-local GetQuestLogTimeLeft = GetQuestLogTimeLeft;
 local GetRealZoneText = GetRealZoneText;
 local GetRewardText = GetRewardText;
 local GetSpellInfo = GetSpellInfo;
-local GetTradeSkillInfo = GetTradeSkillInfo;
 local GetTrainerServiceCost = GetTrainerServiceCost;
 local GetTrainerServiceInfo = GetTrainerServiceInfo;
 local GetTrainerServiceSkillReq = GetTrainerServiceSkillReq;
-local IsEquippedItem = IsEquippedItem;
 local IsFishingLoot = IsFishingLoot;
 local IsPartyLFG = IsPartyLFG;
-local SelectQuestLogEntry = SelectQuestLogEntry;
 local SendAddonMessage = C_ChatInfo.SendAddonMessage;
 local UnitClass = UnitClass;
 local UnitExists = UnitExists;
@@ -769,8 +767,6 @@ local UnitHealthMax = UnitHealthMax;
 local UnitIsDead = UnitIsDead;
 local UnitIsFriend = UnitIsFriend;
 local UnitIsPlayer = UnitIsPlayer;
-local UnitIsTapped = UnitIsTapped;
-local UnitIsTappedByPlayer = UnitIsTappedByPlayer;
 local UnitIsTapDenied = UnitIsTapDenied;
 local UnitIsTrivial = UnitIsTrivial;
 local UnitLevel = UnitLevel;
@@ -1376,14 +1372,14 @@ end
 
 function wlEvent_MERCHANT_UPDATE(self)
 
-    local id, kind = wlUnitGUID("npc");
+    local unitId, kind = wlUnitGUID("npc");
 
-    if not id or kind ~= "npc" or not wlUnit[id] then
+    if not unitId or kind ~= "npc" or not wlUnit[unitId] then
         return;
     end
 
     if CanMerchantRepair() then
-        wlUpdateVariable(wlUnit, id, "canRepair", "init", 1);
+        wlUpdateVariable(wlUnit, unitId, "canRepair", "init", 1);
     end
 
     local standing = select(2, wlUnitFaction("npc"));
@@ -1404,15 +1400,15 @@ function wlEvent_MERCHANT_UPDATE(self)
 
     for slot=1, GetMerchantNumItems() do
         local name, icon, price, stack, numAvailable, _, _, extendedCost = GetMerchantItemInfo(slot);
-        local id, subId = wlParseItemLink(GetMerchantItemLink(slot));
-        if (id ~= 0 or ((currencyInfos[name] ~= nil) and (currencyInfos[name][2] == icon))) then
+        local itemId, subId, _, _, _, _, _, _, _, _, _, numBonus, bonuses = wlParseItemLink(GetMerchantItemLink(slot));
+        if (itemId ~= 0 or ((currencyInfos[name] ~= nil) and (currencyInfos[name][2] == icon))) then
 
-            if (id == 0) then
-                id = currencyInfos[name][1];
+            if (itemId == 0) then
+                itemId = currencyInfos[name][1];
                 subId = -2; -- this is a currency
             else
-                if tContains(WL_DAILY_VENDOR_ITEMS, id) then
-                    wlSeenDaily('i'..id)
+                if tContains(WL_DAILY_VENDOR_ITEMS, itemId) then
+                    wlSeenDaily('i'..itemId)
                 end
             end
 
@@ -1503,12 +1499,12 @@ function wlEvent_MERCHANT_UPDATE(self)
                 price = wlConcat(price, extendedCost);
             end
 
-            merchantItemList[wlConcat(id, subId, stack, price)] = numAvailable;
+            merchantItemList[wlConcat(itemId, subId, stack, price, table.concat(bonuses, ':'))] = numAvailable;
         end
     end
 
     for link, numAvailable in pairs(merchantItemList) do
-        wlUpdateVariable(wlUnit, id, "merchant", link, "max", numAvailable);
+        wlUpdateVariable(wlUnit, unitId, "merchant", link, "max", numAvailable);
     end
 
     SetMerchantFilter(merchantFilters);
@@ -1638,6 +1634,7 @@ local WL_MINDCONTROL_FLAGS = bit_bor(COMBATLOG_OBJECT_TYPE_PET, COMBATLOG_OBJECT
 local WL_PURE_NPC_FLAGS = bit_bor(COMBATLOG_OBJECT_TYPE_NPC, COMBATLOG_OBJECT_CONTROL_NPC, COMBATLOG_OBJECT_REACTION_HOSTILE, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER);
 local wlMostRecentEliteKilled = {};
 local wlConsecutiveNpcKills = 0;
+local wlMostRecentKilled = {};
 
 function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
 
@@ -1718,8 +1715,31 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             wlClearTracker("spell");
         end
 
-    elseif event == "UNIT_DIED" then -- or event == "UNIT_DESTROYED"
+    elseif event == "PARTY_KILL" then
         local id, now = wlCheckUnitForRep(destGUID, destName);
+
+        if (wlMostRecentKilled and wlMostRecentKilled.id and wlMostRecentKilled.timeOfDeath and
+                wlMostRecentKilled.timeOfDeath + 300000 >= now) then
+            wlMostRecentKilled = {};
+        end
+
+        if (WL_LOOT_COUNT_KILLED_NPCS[tonumber(id)] and
+                wlEvent and wlId and wlEvent[wlId] and wlN and wlEvent[wlId][wlN]) then
+            local eventId = wlGetNextEventId();
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "initArray", 0);
+            wlEvent[wlId][wlN][eventId].what = "loot";
+            wlEvent[wlId][wlN][eventId].action = "Killing";
+            wlEvent[wlId][wlN][eventId].kind = "npc";
+            wlEvent[wlId][wlN][eventId].id = id;
+            wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", 1, "set", wlConcat(0, 0, 0, 0));
+            wlMostRecentKilled = {
+                ["eventId"] = eventId;
+                ["guid"] = destGUID,
+                ["id"] = tonumber(id),
+                ["timeOfDeath"] = now,
+            };
+        end
+
         if bit_band(destFlags, WL_PURE_NPC_FLAGS) ~= WL_PURE_NPC_FLAGS then
             return;
         end
@@ -3206,6 +3226,10 @@ function wlEvent_LOOT_OPENED(self, autoLoot, isFromItem)
             wlTracker.spell.kind = "npc";
             wlTracker.spell.id = wlUnitGUID("target");
 
+            if (wlMostRecentKilled.id and tonumber(wlTracker.spell.id) == wlMostRecentKilled.id) then
+                eventId = wlMostRecentKilled.eventId;
+                wlMostRecentKilled = {};
+            end
 
         else -- pets
             return;
@@ -5432,11 +5456,11 @@ function wlParseItemLink(link)
                 wlUpdateVariable(wlItemBonuses, id, bonusContext, "add", 1);
             end
 
+            local allBonuses = {};
             if numBonus and numBonus > 0 and bonuses then
                 local p1, p2 = bonuses:find(":");
                 if p1 and p1 == 1 then
                     bonuses = { strsplit(":", bonuses:sub(2)) };
-                    local allBonuses = {};
                     for index = 1, math.min(16, numBonus), 1 do
                         table.insert(allBonuses, bonuses[index]);
                     end
@@ -5446,11 +5470,11 @@ function wlParseItemLink(link)
                 end
             end
 
-            return id, subId, tonumber(enchant) or 0, tonumber(socket1) or 0, tonumber(socket2) or 0, tonumber(socket3) or 0, tonumber(socket4) or 0, name, color, guid, tonumber(pLevel) or 0, numBonus;
+            return id, subId, tonumber(enchant) or 0, tonumber(socket1) or 0, tonumber(socket2) or 0, tonumber(socket3) or 0, tonumber(socket4) or 0, name, color, guid, tonumber(pLevel) or 0, numBonus, allBonuses;
         end
     end
 
-    return 0, 0, 0, 0, 0, 0, 0, "", "", 0, 0, 0;
+    return 0, 0, 0, 0, 0, 0, 0, "", "", 0, 0, 0, {};
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
