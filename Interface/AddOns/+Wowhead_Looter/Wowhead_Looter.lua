@@ -1394,8 +1394,10 @@ function wlEvent_MERCHANT_UPDATE(self)
     local currencyInfos = {};
     for index = 1, numCurrencies do
         local cInfo = C_CurrencyInfo.GetCurrencyInfo(currencies[index]);
-        local cName, cCount, cIcon = cInfo.name, cInfo.quantity, cInfo.iconFileID;
-        currencyInfos[cName] = { currencies[index], cIcon };
+        if (cInfo) then
+            local cName, cCount, cIcon = cInfo.name, cInfo.quantity, cInfo.iconFileID;
+            currencyInfos[cName] = { currencies[index], cIcon };
+        end
     end
 
     for slot=1, GetMerchantNumItems() do
