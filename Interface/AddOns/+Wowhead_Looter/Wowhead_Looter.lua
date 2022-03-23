@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 9.2.0                     --
---    Updated: March 17, 2021          --
+--    Updated: March 20, 2021          --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -1732,6 +1732,8 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             wlEvent[wlId][wlN][eventId].what = "loot";
             wlEvent[wlId][wlN][eventId].action = "Killing";
             wlEvent[wlId][wlN][eventId].kind = "npc";
+            wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
+            wlEvent[wlId][wlN][eventId].flags = wlGetFactionFlags();
             wlEvent[wlId][wlN][eventId].id = id;
             wlUpdateVariable(wlEvent, wlId, wlN, eventId, "drop", 1, "set", wlConcat(0, 0, 0, 0));
             wlMostRecentKilled = {
@@ -3280,13 +3282,7 @@ function wlEvent_LOOT_OPENED(self, autoLoot, isFromItem)
         wlEvent[wlId][wlN][eventId].uiMapID = wlGetCurrentUiMapID();
     end
 
-    local flags = 0;
-    local faction = UnitFactionGroup("player");
-    if faction == "Alliance" then
-        flags = flags + 1024;
-    elseif faction == "Horde" then
-        flags = flags + 2048;
-    end
+    local flags = wlGetFactionFlags("player");
 
     wlEvent[wlId][wlN][eventId].flags = flags;
 
@@ -3751,13 +3747,7 @@ function wlEvent_CURRENCY_DISPLAY_UPDATE(...)
                 wlEvent[wlId][wlN][eventId].dd = wlGetInstanceDifficulty();
 
                 -- Alliance or Horde
-                local flags = 0;
-                local faction = UnitFactionGroup("player");
-                if faction == "Alliance" then
-                    flags = flags + 1024;
-                elseif faction == "Horde" then
-                    flags = flags + 2048;
-                end
+                local flags = wlGetFactionFlags("player");
 
                 wlEvent[wlId][wlN][eventId].flags = flags;
 
@@ -6193,3 +6183,15 @@ function wlGetCurrentUiMapID()
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+-- Returns the faction flags for the given unit
+function wlGetFactionFlags(unit)
+    local flags = 0;
+    local faction = UnitFactionGroup(unit or "player");
+    if faction == "Alliance" then
+        flags = 1024;
+    elseif faction == "Horde" then
+        flags = 2048;
+    end
+    return flags;
+end
