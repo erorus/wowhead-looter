@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 9.2.0                     --
---    Updated: March 20, 2021          --
+--    Patch: 9.2.5                     --
+--    Updated: May 12, 2022            --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 90200;
+local WL_VERSION = 90205;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -4248,6 +4248,10 @@ local wlScanAppearances_processing = false
 local function wlGetCollectedTransmogAppearances(category, enableFilter)
     local app = nil;
 
+    -- Dummy transmog location table since 9.2.5 PTR API change.
+    local transmogLocation = TransmogUtil.GetTransmogLocation("HEADSLOT",
+        Enum.TransmogType.Appearance, Enum.TransmogModification.Main)
+
     -- enable filter if wardrobe frame is invisible.
     if enableFilter then
         -- save user preferences
@@ -4266,7 +4270,7 @@ local function wlGetCollectedTransmogAppearances(category, enableFilter)
         C_TransmogCollection.SetAllSourceTypeFilters(true)
 
         -- fetch appearances
-        app = C_TransmogCollection.GetCategoryAppearances(category)
+        app = C_TransmogCollection.GetCategoryAppearances(category, transmogLocation)
 
         -- reset back to user preferences
         C_TransmogCollection.SetCollectedShown(collectedChecked)
@@ -4276,7 +4280,7 @@ local function wlGetCollectedTransmogAppearances(category, enableFilter)
         end
     else
         -- fetch appearances
-        app = C_TransmogCollection.GetCategoryAppearances(category)
+        app = C_TransmogCollection.GetCategoryAppearances(category, transmogLocation)
     end
 
     return app
