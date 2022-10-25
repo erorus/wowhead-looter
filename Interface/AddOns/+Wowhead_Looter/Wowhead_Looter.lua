@@ -3,15 +3,15 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 9.2.7                     --
---    Updated: August 16, 2022         --
+--    Patch: 10.0.0                    --
+--    Updated: October 25, 2022        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 90207;
+local WL_VERSION = 100000;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -791,6 +791,12 @@ local sub, gsub = sub, gsub;
 local lower = lower;
 local time = time;
 
+if C_Container then
+    C_Container.GetContainerNumSlots = GetContainerNumSlots or C_Container.GetContainerNumSlots;
+    C_Container.GetContainerItemID = GetContainerItemID or C_Container.GetContainerItemID;
+    C_Container.GetContainerItemDurability = GetContainerItemDurability or C_Container.GetContainerItemDurability;
+end
+
 -- Local Variables
 local wlTracker = {};
 local wlNpcInfo = {};
@@ -1566,10 +1572,12 @@ function wlEvent_TRAINER_SHOW(self)
     SetTrainerServiceTypeFilter("unavailable", fUnavail and 1 or 0);
     SetTrainerServiceTypeFilter("used", fUsed and 1 or 0);
 
+    --[[
     ClassTrainerFrame.selectedService = oldIndex >= 1 and oldIndex or 1;
     SelectTrainerService(oldIndex >= 1 and oldIndex or 1);
     ClassTrainerFrame.scrollFrame.scrollBar:SetValue((ClassTrainerFrame.selectedService-1)*CLASS_TRAINER_SKILL_HEIGHT);
     ClassTrainerFrame_Update();
+    --]]
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -2393,7 +2401,7 @@ function wlEvent_CHAT_MSG_COMBAT_FACTION_CHANGE(self, msg)
 
     if wlIsValidInterval(wlTracker.quest.time or 0, wlGetTime(), 1000) and wlTracker.quest.action == "turn-in" then
         return; -- Quest reputation
-    elseif not wlIsValidInterval(wlTracker.rep.time or 0, wlGetTime(), 1000) or not wlFaction[factionName] then
+    elseif not wlTracker.rep or not wlIsValidInterval(wlTracker.rep.time or 0, wlGetTime(), 1000) or not wlFaction[factionName] then
         return; -- Not kill reputation
     end
 
@@ -3086,7 +3094,7 @@ end
 function wlGuessBagAndSlot(link)
     local itemID = wlParseItemLink(link);
     for bag = NUM_BAG_FRAMES, 0, -1 do
-        for slot=1, GetContainerNumSlots(bag) do
+        for slot=1, C_Container.GetContainerNumSlots(bag) do
             if wlParseItemLink(GetContainerItemLink(bag, slot)) == itemID then
                 return bag, slot;
             end
@@ -3100,7 +3108,7 @@ end
 function wlGetLockedID()
     -- an item becomes locked (grayed out) when it is being looted
     for bag = NUM_BAG_FRAMES, 0, -1 do
-        for slot=1, GetContainerNumSlots(bag) do
+        for slot=1, C_Container.GetContainerNumSlots(bag) do
             if select(3, GetContainerItemInfo(bag, slot)) then
                 local link = GetContainerItemLink(bag, slot);
                 return wlParseItemLink(link);
@@ -3296,20 +3304,20 @@ function wlEvent_LOOT_OPENED(self, autoLoot, isFromItem)
         local lootSources = { GetLootSourceInfo(slot) };
 
         local slotType = GetLootSlotType(slot);
-        if slotType ~= LOOT_SLOT_NONE then
+        if slotType ~= Enum.LootSlotType.None then
             local typeId = nil;
             local numBonus = 0;
             local currencyId = nil;
             local itemLink = GetLootSlotLink(slot);
 
-            if slotType == LOOT_SLOT_ITEM then
+            if slotType == Enum.LootSlotType.Item then
                 typeId, _, _, _, _, _, _, _, _, _, _, numBonus = wlParseItemLink(itemLink);
                 -- for sourceIndex = 1, #lootSources, 2 do
                 --     print(("%s looted %d of %s"):format(wlParseGUID(lootSources[sourceIndex]), lootSources[sourceIndex + 1], GetItemInfo(itemId)));
                 -- end
-            elseif slotType == LOOT_SLOT_MONEY then
+            elseif slotType == Enum.LootSlotType.Money then
                 typeId = "coin";
-            elseif slotType == LOOT_SLOT_CURRENCY then
+            elseif slotType == Enum.LootSlotType.Currency then
                 local icon_file_name, currencyName, currencyQuantity, currencyRarity, currencyLocked = GetLootSlotInfo(slot);
                 currencyId = WL_CURRENCIES[currencyName:lower()];
 
@@ -3469,7 +3477,7 @@ local LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%s"
 LOOT_ITEM_PUSHED_SELF_MULTIPLE = LOOT_ITEM_PUSHED_SELF_MULTIPLE:gsub("%%d", "(%%d+)");
 function wlEvent_CHAT_MSG_LOOT(self, msg, arg2, arg3, arg4, msgLootName)
     local now = wlGetTime();
-    if not wlTracker.spell.id or not wlTracker.spell.time or not wlIsValidInterval(wlTracker.spell.time or 0, now, 500) then
+    if not wlTracker.spell or not wlTracker.spell.id or not wlTracker.spell.time or not wlIsValidInterval(wlTracker.spell.time or 0, now, 500) then
         return;
     end
 
@@ -3955,7 +3963,7 @@ function wlScanProfessionWindow(...)
         end
     end
 
-    local tradeSkillID, skillLineName =  C_TradeSkillUI.GetTradeSkillLine();
+    local professionInfo = C_TradeSkillUI.GetChildProfessionInfo();
 
     local showMakeable = C_TradeSkillUI.GetOnlyShowMakeableRecipes();
     local showSkillups = C_TradeSkillUI.GetOnlyShowSkillUpRecipes();
@@ -3970,7 +3978,7 @@ function wlScanProfessionWindow(...)
             if found then
                 -- run the handlers for this trade skill spell
                 for funcIndex = 1, parameterCount do
-                    select(funcIndex, ...)(skillLineName, spellId, recipeID);
+                    select(funcIndex, ...)(professionInfo.professionName, spellId, recipeID);
                 end
             end
         end
@@ -4784,10 +4792,26 @@ function wlMiniMapOnLeave(self, motion)
 end
 
 function wlMiniMapOnClick(self, button, down)
-    if not InterfaceOptionsFrame:IsShown() then
-        InterfaceOptionsFrame_OpenToCategory([[Wowhead Looter]]);
-    else
-        InterfaceOptionsFrame:Hide();
+    if InterfaceOptionsFrame then
+        if not InterfaceOptionsFrame:IsShown() then
+            InterfaceOptionsFrame_OpenToCategory([[Wowhead Looter]]);
+        else
+            InterfaceOptionsFrame:Hide();
+        end
+    elseif Settings and SettingsPanel and Settings.OpenToCategory then
+        local optionPanel = _G["wlOptionsPanel"];
+        if optionPanel:IsShown() then
+            optionPanel:Hide();
+        else
+            optionPanel:Show();
+        end
+        --[[
+        if not SettingsPanel:IsShown() then
+            Settings.OpenToCategory("Wowhead Looter");
+        else
+            SettingsPanel:Hide();
+        end
+        --]]
     end
 end
 
@@ -4855,8 +4879,21 @@ function wlCreateFrames()
     button:SetScript("OnMouseUp", wlMiniMapOnMouseUp);
     button:Hide();
 
+    -- 10.0 Settings options
+    --[[
     local panel = CreateFrame("Frame", "wlOptionsPanel", InterfaceOptionsFramePanelContainer);
+    local category, layout = Settings.RegisterCanvasLayoutCategory(panel, "Wowhead Looter");
+    panel.OnCommit = panel.okay;
+    panel.OnDefault = panel.default;
+    panel.OnRefresh = panel.refresh;
+    Settings.RegisterAddOnCategory(category);
+    --]]
+    local panel = CreateFrame("Frame", "wlOptionsPanel", UIParent, "BackdropTemplate");
     panel.name = "Wowhead Looter";
+    panel:SetPoint("CENTER");
+    panel:SetSize(500, 400);
+    panel:SetBackdrop(BACKDROP_DIALOG_32_32);
+    panel:Hide();
 
     local titlebar = CreateFrame("Frame", nil, panel);
     titlebar:SetPoint("TOPLEFT", panel, "TOPLEFT");
@@ -5055,7 +5092,14 @@ function wlCreateFrames()
         StaticPopup_Show("WL_RESET_CONFIRM");
     end);
 
-    InterfaceOptions_AddCategory(panel);
+    local closeButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate");
+    closeButton:SetText("OK");
+    closeButton:SetWidth(100);
+    closeButton:SetHeight(24);
+    closeButton:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -10, 10);
+    closeButton:SetScript("OnClick", function(self, button, down)
+        panel:Hide();
+    end);
 end
 
 function wl_OnLoad(self)
@@ -6061,11 +6105,16 @@ function wlHook()
         end
     end);
 
-    hooksecurefunc("UseContainerItem", function(bag, slot, target)
+    local useContainerItemFunc = function(bag, slot, target)
         if not target then
             wlBagItemOnUse(GetContainerItemLink(bag, slot), bag, slot);
         end
-    end);
+    end
+    if C_Container and C_Container.UseContainerItem then
+        hooksecurefunc(C_Container, "UseContainerItem", useContainerItemFunc);
+    elseif UseContainerItem then
+        hooksecurefunc("UseContainerItem", useContainerItemFunc);
+    end
 
     if (PlaceAuctionBid) then
         hooksecurefunc("PlaceAuctionBid", wlPlaceAuctionBid);
@@ -6102,9 +6151,9 @@ end
 
 function wlGetItemDurability()
     for i=0, NUM_BAG_SLOTS do
-        for j=1, GetContainerNumSlots(i) do
-            local itemID = GetContainerItemID(i, j);
-            local _, maxDura = GetContainerItemDurability(i, j);
+        for j=1, C_Container.GetContainerNumSlots(i) do
+            local itemID = C_Container.GetContainerItemID(i, j);
+            local _, maxDura = C_Container.GetContainerItemDurability(i, j);
             if itemID and itemID ~= 0 then
                 wlItemDurability[itemID] = maxDura or 0;
             end

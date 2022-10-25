@@ -22,6 +22,7 @@
         <Anchor point="CENTER" />
     </Anchors>
 
+    <!--
     <TitleRegion>
         <Size>
             <AbsDimension x="150" y="32" />
@@ -34,6 +35,7 @@
             </Anchor>
         </Anchors>
     </TitleRegion>
+    -->
 
     <KeyValues>
         <KeyValue key="backdropInfo" value="BACKDROP_DIALOG_32_32" type="global"/>
@@ -192,6 +194,7 @@
         <Anchor point="CENTER" />
     </Anchors>
 
+    <!--
     <TitleRegion>
         <Size>
             <AbsDimension x="150" y="32" />
@@ -204,6 +207,7 @@
             </Anchor>
         </Anchors>
     </TitleRegion>
+    -->
 
     <KeyValues>
         <KeyValue key="backdropInfo" value="BACKDROP_DIALOG_32_32" type="global"/>
@@ -394,6 +398,7 @@
 
 
 <Frame name="wlLocTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="TooltipBackdropTemplate">
+    <!--
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -402,6 +407,7 @@
             <Anchor point="CENTER" />
         </Anchors>
     </TitleRegion>
+    -->
 
     <Size>
         <AbsDimension x="1" y="25" />
@@ -448,6 +454,7 @@
 
 
 <Frame name="wlIdTooltipFrame" frameStrata="MEDIUM" movable="true" clampedToScreen="true" enableMouse="true" hidden="true" parent="UIParent" inherits="TooltipBackdropTemplate">
+    <!--
     <TitleRegion>
         <Size>
             <AbsDimension x="500" y="500" />
@@ -456,6 +463,7 @@
             <Anchor point="CENTER" />
         </Anchors>
     </TitleRegion>
+    -->
 
     <Size>
         <AbsDimension x="1" y="38" />
