@@ -4,7 +4,7 @@
 --                                     --
 --                                     --
 --    Patch: 10.0.0                    --
---    Updated: October 25, 2022        --
+--    Updated: November 9, 2022        --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
@@ -1572,12 +1572,13 @@ function wlEvent_TRAINER_SHOW(self)
     SetTrainerServiceTypeFilter("unavailable", fUnavail and 1 or 0);
     SetTrainerServiceTypeFilter("used", fUsed and 1 or 0);
 
-    --[[
-    ClassTrainerFrame.selectedService = oldIndex >= 1 and oldIndex or 1;
-    SelectTrainerService(oldIndex >= 1 and oldIndex or 1);
-    ClassTrainerFrame.scrollFrame.scrollBar:SetValue((ClassTrainerFrame.selectedService-1)*CLASS_TRAINER_SKILL_HEIGHT);
-    ClassTrainerFrame_Update();
-    --]]
+    if ClassTrainerFrame then
+        oldIndex = oldIndex >= 1 and oldIndex or 1;
+        ClassTrainerFrame.selectedService = oldIndex;
+        SelectTrainerService(oldIndex);
+        ClassTrainerFrame.ScrollBox:ScrollToNearest(oldIndex);
+        ClassTrainerFrame_Update();
+    end
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4015,14 +4016,14 @@ function wlScanToys(processToys)
     local numSources = C_PetJournal.GetNumPetSources() -- yes, pet sources used for toy source list
 
     for i=1,numSources do
-        fSources[i] = not C_ToyBox.IsSourceTypeFilterChecked(i)
+        fSources[i] = C_ToyBox.IsSourceTypeFilterChecked(i)
         C_ToyBox.SetSourceTypeFilter(i,true)
     end
 
     local numExpansions = GetNumExpansions()
     local fExpansions = {}
     for i=1,numExpansions do
-        fExpansions[i] = not C_ToyBox.IsExpansionTypeFilterChecked(i);
+        fExpansions[i] = C_ToyBox.IsExpansionTypeFilterChecked(i);
         C_ToyBox.SetExpansionTypeFilter(i,true)
     end
 
@@ -4744,12 +4745,14 @@ function wlUpdateMiniMapButtonPosition(button)
     end
     local minimapShape = GetMinimapShape and GetMinimapShape() or "ROUND";
     local quadTable = wlMinimapShapes[minimapShape];
+    local w = (Minimap:GetWidth() / 2) + 5;
+    local h = (Minimap:GetHeight() / 2) + 5;
     if quadTable[q] then
-        x, y = x*80, y*80;
+        x, y = x*w, y*h;
     else
         local diagRadius = 103.13708498985; --math.sqrt(2*(80)^2)-10
-        x = math.max(-80, math.min(x*diagRadius, 80));
-        y = math.max(-80, math.min(y*diagRadius, 80));
+        x = math.max(-w, math.min(x*diagRadius, w));
+        y = math.max(-h, math.min(y*diagRadius, h));
     end
     button:SetPoint("CENTER", Minimap, "CENTER", x, y);
 end
@@ -4792,26 +4795,18 @@ function wlMiniMapOnLeave(self, motion)
 end
 
 function wlMiniMapOnClick(self, button, down)
-    if InterfaceOptionsFrame then
+    if Settings and SettingsPanel and Settings.OpenToCategory then
+        if SettingsPanel:IsShown() then
+            HideUIPanel(SettingsPanel);
+        else
+            Settings.OpenToCategory("Wowhead Looter");
+        end
+    elseif InterfaceOptionsFrame then
         if not InterfaceOptionsFrame:IsShown() then
             InterfaceOptionsFrame_OpenToCategory([[Wowhead Looter]]);
         else
             InterfaceOptionsFrame:Hide();
         end
-    elseif Settings and SettingsPanel and Settings.OpenToCategory then
-        local optionPanel = _G["wlOptionsPanel"];
-        if optionPanel:IsShown() then
-            optionPanel:Hide();
-        else
-            optionPanel:Show();
-        end
-        --[[
-        if not SettingsPanel:IsShown() then
-            Settings.OpenToCategory("Wowhead Looter");
-        else
-            SettingsPanel:Hide();
-        end
-        --]]
     end
 end
 
@@ -4880,20 +4875,11 @@ function wlCreateFrames()
     button:Hide();
 
     -- 10.0 Settings options
-    --[[
-    local panel = CreateFrame("Frame", "wlOptionsPanel", InterfaceOptionsFramePanelContainer);
-    local category, layout = Settings.RegisterCanvasLayoutCategory(panel, "Wowhead Looter");
-    panel.OnCommit = panel.okay;
-    panel.OnDefault = panel.default;
-    panel.OnRefresh = panel.refresh;
-    Settings.RegisterAddOnCategory(category);
-    --]]
-    local panel = CreateFrame("Frame", "wlOptionsPanel", UIParent, "BackdropTemplate");
+    local panel = CreateFrame("Frame", "wlOptionsPanel");
     panel.name = "Wowhead Looter";
-    panel:SetPoint("CENTER");
-    panel:SetSize(500, 400);
-    panel:SetBackdrop(BACKDROP_DIALOG_32_32);
-    panel:Hide();
+    local category, layout = Settings.RegisterCanvasLayoutCategory(panel, panel.name, panel.name);
+    category.ID = panel.name;
+    Settings.RegisterAddOnCategory(category);
 
     local titlebar = CreateFrame("Frame", nil, panel);
     titlebar:SetPoint("TOPLEFT", panel, "TOPLEFT");
@@ -5090,15 +5076,6 @@ function wlCreateFrames()
     resetAllButton:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 10, 10);
     resetAllButton:SetScript("OnClick", function(self, button, down)
         StaticPopup_Show("WL_RESET_CONFIRM");
-    end);
-
-    local closeButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate");
-    closeButton:SetText("OK");
-    closeButton:SetWidth(100);
-    closeButton:SetHeight(24);
-    closeButton:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -10, 10);
-    closeButton:SetScript("OnClick", function(self, button, down)
-        panel:Hide();
     end);
 end
 
