@@ -3,15 +3,17 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 10.0.0                    --
---    Updated: November 9, 2022        --
+--    Patch: 10.0.2                    --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
+-- When this version of the addon was made.
+local WL_ADDON_UPDATED = "2022-11-15";
+
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 100000;
+local WL_VERSION = 100002;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -791,12 +793,6 @@ local sub, gsub = sub, gsub;
 local lower = lower;
 local time = time;
 
-if C_Container then
-    C_Container.GetContainerNumSlots = GetContainerNumSlots or C_Container.GetContainerNumSlots;
-    C_Container.GetContainerItemID = GetContainerItemID or C_Container.GetContainerItemID;
-    C_Container.GetContainerItemDurability = GetContainerItemDurability or C_Container.GetContainerItemDurability;
-end
-
 -- Local Variables
 local wlTracker = {};
 local wlNpcInfo = {};
@@ -954,7 +950,7 @@ function wlEvent_PLAYER_LOGIN(self)
     wlScanFollowers();
     wlScanHeirlooms();
 
-    wlMessage(WL_LOADED:format(WL_NAME, WL_VERSION), true);
+    wlMessage(WL_LOADED:format(WL_NAME, WL_VERSION) .. " - " .. WL_ADDON_UPDATED, true);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -1327,7 +1323,7 @@ function wlGetCurrentScrappingItemLink()
     for idx = 0, 8 do
         local loc = C_ScrappingMachineUI.GetCurrentPendingScrapItemLocationByIndex(idx);
         if loc then
-            local _,_,_,_,_,_,itemLink = GetContainerItemInfo(loc.bagID, loc.slotIndex);
+            local _,_,_,_,_,_,itemLink = C_Container.GetContainerItemInfo(loc.bagID, loc.slotIndex);
             if itemLink ~= nil then
                 return itemLink;
             end
@@ -3072,7 +3068,7 @@ function wlBagItemOnUse(link, bag, slot)
 
     local id = wlParseItemLink(link);
     if bag and slot then
-        local openable = select(6, GetContainerItemInfo(bag, slot));
+        local openable = select(6, C_Container.GetContainerItemInfo(bag, slot));
         if openable then
             wlClearTracker("spell");
             wlTrackerClearedTime = now;
@@ -3096,7 +3092,7 @@ function wlGuessBagAndSlot(link)
     local itemID = wlParseItemLink(link);
     for bag = NUM_BAG_FRAMES, 0, -1 do
         for slot=1, C_Container.GetContainerNumSlots(bag) do
-            if wlParseItemLink(GetContainerItemLink(bag, slot)) == itemID then
+            if wlParseItemLink(C_Container.GetContainerItemLink(bag, slot)) == itemID then
                 return bag, slot;
             end
         end
@@ -3110,8 +3106,8 @@ function wlGetLockedID()
     -- an item becomes locked (grayed out) when it is being looted
     for bag = NUM_BAG_FRAMES, 0, -1 do
         for slot=1, C_Container.GetContainerNumSlots(bag) do
-            if select(3, GetContainerItemInfo(bag, slot)) then
-                local link = GetContainerItemLink(bag, slot);
+            if select(3, C_Container.GetContainerItemInfo(bag, slot)) then
+                local link = C_Container.GetContainerItemLink(bag, slot);
                 return wlParseItemLink(link);
             end
         end
@@ -3447,10 +3443,10 @@ function wlEvent_ITEM_LOCK_CHANGED(self, bag, slot)
         return;
     end
 
-    local itemLink = GetContainerItemLink(bag, slot);
+    local itemLink = C_Container.GetContainerItemLink(bag, slot);
     local itemID = wlParseItemLink(itemLink);
 
-    if select(3, GetContainerItemInfo(bag, slot)) and wlTracker.spell.id == itemID then
+    if select(3, C_Container.GetContainerItemInfo(bag, slot)) and wlTracker.spell.id == itemID then
         wlLockedID = itemID;
     end
 
@@ -4253,7 +4249,7 @@ function wlScanHeirlooms()
     end
 end
 
-local wlScanAppearances_processing = false
+local wlScanAppearancesProgress = nil;
 local function wlGetCollectedTransmogAppearances(category, enableFilter)
     local app = nil;
 
@@ -4295,43 +4291,54 @@ local function wlGetCollectedTransmogAppearances(category, enableFilter)
     return app
 end
 
+-- Initiate an appearance (transmog) scan.
 function wlScanAppearances()
     if not C_TransmogCollection then
         return false
     end
 
-    local ids = ""
+    if (wlTimers.scanAppearances) then
+        return false;
+    end
 
-    if wlScanAppearances_processing then -- events might fire when we change filters
+    wlScanAppearancesProgress = {};
+    wlScanAppearancesProgress.colType = Enum.TransmogCollectionTypeMeta.MinValue;
+    wlScanAppearancesProgress.appearanceTable = {}
+    wlScanAppearancesProgress.interval = 200;
+    wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
+
+    return true;
+end
+
+-- Scan appearance for a transmog collection type
+function wlScanAppearancesStep()
+    if not wlScanAppearancesProgress then
         return
     end
-    wlScanAppearances_processing = true
 
-    local appearanceTable = {}
+    local colType = wlScanAppearancesProgress.colType;
 
     -- enable filter if wardrobe frame is invisible.
     local enableFilter = not WardrobeCollectionFrame or not WardrobeCollectionFrame:IsVisible();
 
-    for colType = Enum.TransmogCollectionTypeMeta.MinValue, Enum.TransmogCollectionTypeMeta.MaxValue do
-        local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
-        if (app) then
-            for k, o in pairs(app) do
-                if o.isCollected and not o.isHideVisual then
-                    tinsert(appearanceTable, o.visualID .. ':' .. colType)
-                end
+    local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
+    if (app) then
+        for k, o in pairs(app) do
+            if o.isCollected and not o.isHideVisual then
+                tinsert(wlScanAppearancesProgress.appearanceTable, o.visualID .. ':' .. colType)
             end
         end
     end
 
-    ids = table.concat(appearanceTable,',')
-
-    wlScanAppearances_processing = false
-
-    if ids ~= "" then
-        wlScans.appearances = ids;
-        return true;
+    if colType < Enum.TransmogCollectionTypeMeta.MaxValue then
+        wlScanAppearancesProgress.colType = colType + 1;
+        wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
     else
-        return false;
+        local ids = table.concat(wlScanAppearancesProgress.appearanceTable, ',');
+        if ids ~= "" then
+            wlScans.appearances = ids;
+        end
+        wlScanAppearancesProgress = nil;
     end
 end
 
@@ -4513,6 +4520,40 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+--[[
+-- Scan the vignettes for 10.x Primal Elements events.
+]]
+function wlCheckPrimalVignettes()
+    local uiMapIds = {
+        [18] = true, [997] = true, [1247] = true, [2070] = true,
+        [15] = true, [1245] = true,
+        [78] = true, [1319] = true,
+        [10] = true, [1307] = true,
+    };
+    local uiMapId = C_Map.GetBestMapForUnit("player");
+    if not uiMapIds[uiMapId] then
+        return;
+    end
+
+    local vIds = {
+        [5092] = true,
+        [5146] = true,
+        [5147] = true,
+        [5148] = true,
+        [5157] = true,
+        [5159] = true,
+        [5162] = true,
+    };
+    local guids = C_VignetteInfo.GetVignettes();
+    for _, guid in ipairs(guids) do
+        local info = C_VignetteInfo.GetVignetteInfo(guid);
+        if vIds[info.vignetteID] then
+            wlSeenDaily('v' .. info.vignetteID);
+        end
+    end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
 --[[
 -- Check for completed Venthyr broken mirror tracking quests.
@@ -4536,6 +4577,7 @@ end
 ]]
 function wlEvent_VIGNETTES_UPDATED()
     wlCheckTorghastWings();
+    wlCheckPrimalVignettes();
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -4544,6 +4586,7 @@ function wlEvent_ZONE_CHANGED()
     wlLocTooltipFrame_OnUpdate();
     wlCheckTorghastWings();
     wlCheckVenthyrBrokenMirrorQuests();
+    wlCheckPrimalVignettes();
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -5167,6 +5210,10 @@ function wl_OnUpdate(self, elapsed)
 
                 elseif name == "scanAchievements" then
                     wlScanAchievementsStep();
+
+                elseif name == "scanAppearances" then
+                    wlScanAppearancesStep();
+
                 end
             end
         end
@@ -6084,7 +6131,7 @@ function wlHook()
 
     local useContainerItemFunc = function(bag, slot, target)
         if not target then
-            wlBagItemOnUse(GetContainerItemLink(bag, slot), bag, slot);
+            wlBagItemOnUse(C_Container.GetContainerItemLink(bag, slot), bag, slot);
         end
     end
     if C_Container and C_Container.UseContainerItem then
