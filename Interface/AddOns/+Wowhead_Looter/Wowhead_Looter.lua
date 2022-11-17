@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-11-15";
+local WL_ADDON_UPDATED = "2022-11-16";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -3933,14 +3933,16 @@ end
 -- a trade skill spell handler
 function wlGrabTradeSkillTools(skillLineName, spellId, tradeSkillIndex)
     -- Process Anvil and Forge detection
-    local tools = C_TradeSkillUI.GetRecipeTools(tradeSkillIndex);
+    local reqs = C_TradeSkillUI.GetRecipeRequirements(tradeSkillIndex);
 
-    if tools then
-        if tools:find("Anvil") ~= nil then
-            wlAnvilSpells[tonumber(spellId)] = true;
-        end
-        if tools:find("Forge") ~= nil then
-            wlForgeSpells[tonumber(spellId)] = true;
+    if reqs then
+        for _,v in ipairs(reqs) do
+            if v["name"]:find("Anvil") ~= nil then
+                wlAnvilSpells[tonumber(spellId)] = true;
+            end
+            if v["name"]:find("Forge") ~= nil then
+                wlForgeSpells[tonumber(spellId)] = true;
+            end
         end
     end
 end
