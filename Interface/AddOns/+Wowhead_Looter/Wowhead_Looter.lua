@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-11-16";
+local WL_ADDON_UPDATED = "2022-11-21";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -710,6 +710,16 @@ local WL_VENTHYR_BROKEN_MIRROR_TRACKING_QUESTS = {
     61817,61830, 61821,61831, 61825,61832,
     61820,61828, 61824,61829, 59236,60297,
 }
+
+-- DungeonEncounter id to npc id
+local WL_ENCOUNTER_NPC = {
+    [1563] = 62346, -- Galleon
+    [1564] = 60491, -- Sha of Anger
+    [1571] = 69099, -- Nalak
+    [1587] = 69161, -- Oondasta
+    [1755] = 83746, -- Rukhmar
+}
+local wlLastBossKillNpcId = 0;
 
 -- Speed optimizations
 local CheckInteractDistance = CheckInteractDistance;
@@ -1722,8 +1732,13 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             wlClearTracker("spell");
         end
 
-    elseif event == "PARTY_KILL" then
+    elseif event == "PARTY_KILL" or event == "UNIT_DIED" then
         local id, now = wlCheckUnitForRep(destGUID, destName);
+
+        if event == "UNIT_DIED" and wlLastBossKillNpcId ~= tonumber(id) then
+            wlLastBossKillNpcId = 0;
+            return;
+        end
 
         if (wlMostRecentKilled and wlMostRecentKilled.id and wlMostRecentKilled.timeOfDeath and
                 wlMostRecentKilled.timeOfDeath + 300000 >= now) then
@@ -1764,9 +1779,20 @@ function wlEvent_COMBAT_LOG_EVENT_UNFILTERED()
             ["timeOfDeath"] = now,
         };
 
+        wlLastBossKillNpcId = 0;
+
     elseif event == "SPELL_CAST_FAILED" and spellId == WL_SPELL_SCRAPPING then
         wlClearTracker("spell");
 
+    end
+end
+
+function wlEvent_BOSS_KILL(self, encounterId, encounterName)
+    local npcId = WL_ENCOUNTER_NPC[encounterId];
+    if npcId then
+        wlLastBossKillNpcId = npcId;
+    else
+        wlLastBossKillNpcId = 0;
     end
 end
 
@@ -4666,6 +4692,7 @@ local wlEvents = {
     MERCHANT_UPDATE = wlEvent_MERCHANT_UPDATE,
     TRAINER_SHOW = wlEvent_TRAINER_SHOW,
     COMBAT_LOG_EVENT_UNFILTERED = wlEvent_COMBAT_LOG_EVENT_UNFILTERED,
+    BOSS_KILL = wlEvent_BOSS_KILL,
     UPDATE_MOUSEOVER_UNIT = wlEvent_UPDATE_MOUSEOVER_UNIT,
     DYNAMIC_GOSSIP_POI_UPDATED = wlEvent_DYNAMIC_GOSSIP_POI_UPDATED,
 
