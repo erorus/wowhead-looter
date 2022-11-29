@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-11-21";
+local WL_ADDON_UPDATED = "2022-11-28";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -682,6 +682,31 @@ local WL_DAILY_BUT_NOT_REALLY = {
     63951, -- A Shady Place
     63836, -- Fangcrack's Fan Club
     63837, -- A Tea for Every Occasion
+
+    -- Valdrakken Weekly Quests
+    -- Proving
+    72166, -- in Battle
+    72168, -- in Skirmishes
+    72167, -- in War
+    72170, -- Teamwork
+    72171, -- Solo
+
+    -- Relic Recovery:
+    66860, -- Legacy of Tyr
+    66861, -- Neltharus
+    66863, -- The Nokhud Offensive
+    66864, -- Brackenhide Hollow
+    66865, -- The Azure Vault
+    66866, -- Halls of Infusion
+    66867, -- Algeth'ar Academy
+
+    -- Preserving the Past:
+    66868, -- Legacy of Tyr
+    66870, -- Ruby Life Pools
+    66871, -- The Nokhud Offensive
+    66873, -- The Azure Vault
+    66874, -- Halls of Infusion
+    66875, -- Algeth'ar Academy
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
