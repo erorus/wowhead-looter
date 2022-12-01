@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-11-28";
+local WL_ADDON_UPDATED = "2022-12-01";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -1358,9 +1358,9 @@ function wlGetCurrentScrappingItemLink()
     for idx = 0, 8 do
         local loc = C_ScrappingMachineUI.GetCurrentPendingScrapItemLocationByIndex(idx);
         if loc then
-            local _,_,_,_,_,_,itemLink = C_Container.GetContainerItemInfo(loc.bagID, loc.slotIndex);
-            if itemLink ~= nil then
-                return itemLink;
+            local itemInfo = C_Container.GetContainerItemInfo(loc.bagID, loc.slotIndex);
+            if itemInfo.hyperlink ~= nil then
+                return itemInfo.hyperlink;
             end
         end
     end
@@ -3119,8 +3119,8 @@ function wlBagItemOnUse(link, bag, slot)
 
     local id = wlParseItemLink(link);
     if bag and slot then
-        local openable = select(6, C_Container.GetContainerItemInfo(bag, slot));
-        if openable then
+        local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
+        if itemInfo.hasLoot then
             wlClearTracker("spell");
             wlTrackerClearedTime = now;
             wlTracker.spell.time = now;
@@ -3157,7 +3157,8 @@ function wlGetLockedID()
     -- an item becomes locked (grayed out) when it is being looted
     for bag = NUM_BAG_FRAMES, 0, -1 do
         for slot=1, C_Container.GetContainerNumSlots(bag) do
-            if select(3, C_Container.GetContainerItemInfo(bag, slot)) then
+            local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
+            if itemInfo and itemInfo.isLocked then
                 local link = C_Container.GetContainerItemLink(bag, slot);
                 return wlParseItemLink(link);
             end
@@ -3496,8 +3497,9 @@ function wlEvent_ITEM_LOCK_CHANGED(self, bag, slot)
 
     local itemLink = C_Container.GetContainerItemLink(bag, slot);
     local itemID = wlParseItemLink(itemLink);
+    local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
 
-    if select(3, C_Container.GetContainerItemInfo(bag, slot)) and wlTracker.spell.id == itemID then
+    if itemInfo.isLocked and wlTracker.spell.id == itemID then
         wlLockedID = itemID;
     end
 
