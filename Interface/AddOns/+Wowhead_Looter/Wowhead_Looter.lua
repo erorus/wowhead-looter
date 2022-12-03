@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-12-01";
+local WL_ADDON_UPDATED = "2022-12-02";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -984,6 +984,7 @@ function wlEvent_PLAYER_LOGIN(self)
     wlScanAchievements();
     wlScanFollowers();
     wlScanHeirlooms();
+    wlCheckAreaPois();
 
     wlMessage(WL_LOADED:format(WL_NAME, WL_VERSION) .. " - " .. WL_ADDON_UPDATED, true);
 end
@@ -4637,6 +4638,49 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+-- Event handler for AREA_POIS_UPDATED
+function wlEvent_AREA_POIS_UPDATED()
+    wlCheckAreaPois();
+end
+
+
+local wlPois = {}
+
+-- Check for Area POIs that we are interested in.
+function wlCheckAreaPois()
+    local uiMapIds = {
+        1978, -- Dragon Isles
+        2022, -- Waking Shores
+        2023, -- Ohn'ahran Plains
+        2024, -- Azure Span
+        2025, -- Thaldraszus
+        2112, -- Valdrakken
+    };
+
+    for _, uiMapId in ipairs(uiMapIds) do
+        local pois = C_AreaPoiInfo.GetAreaPOIForMap(uiMapId);
+        for _, poiId in ipairs(pois) do
+            if C_AreaPoiInfo.IsAreaPOITimed(poiId) then
+                local secondsLeft = C_AreaPoiInfo.GetAreaPOISecondsLeft(poiId);
+                if secondsLeft then
+                    local curTime = GetServerTime();
+                    local endTime = curTime + secondsLeft;
+                    if not wlPois[uiMapId] then
+                        wlPois[uiMapId] = {};
+                    end
+                    if not wlPois[uiMapId][poiId] or wlPois[uiMapId][poiId] ~= endTime then
+                        wlPois[uiMapId][poiId] = endTime;
+                        wlSeenDaily('p' .. poiId ..  '.' .. uiMapId ..
+                            '.' .. curTime .. '.' .. endTime ..  '.' .. secondsLeft);
+                    end
+                end
+            end
+        end
+    end
+end
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
 function wlEvent_ZONE_CHANGED()
     wlLocTooltipFrame_OnUpdate();
     wlCheckTorghastWings();
@@ -4780,6 +4824,7 @@ local wlEvents = {
     ZONE_CHANGED = wlEvent_ZONE_CHANGED,
     ZONE_CHANGED_NEW_AREA = wlEvent_ZONE_CHANGED,
     VIGNETTES_UPDATED = wlEvent_VIGNETTES_UPDATED,
+    AREA_POIS_UPDATED = wlEvent_AREA_POIS_UPDATED,
 
     -- challenge mode / mythic+ affixes
     CHALLENGE_MODE_START = wlEvent_CHALLENGE_MODE_UPDATE,
