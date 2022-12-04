@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-12-02";
+local WL_ADDON_UPDATED = "2022-12-03";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -1360,7 +1360,7 @@ function wlGetCurrentScrappingItemLink()
         local loc = C_ScrappingMachineUI.GetCurrentPendingScrapItemLocationByIndex(idx);
         if loc then
             local itemInfo = C_Container.GetContainerItemInfo(loc.bagID, loc.slotIndex);
-            if itemInfo.hyperlink ~= nil then
+            if itemInfo and itemInfo.hyperlink ~= nil then
                 return itemInfo.hyperlink;
             end
         end
@@ -1422,9 +1422,16 @@ function wlEvent_MERCHANT_UPDATE(self)
 
     local standing = select(2, wlUnitFaction("npc"));
 
+    local setFilter = true;
+    if IsAddOnLoaded('CompactVendor') then
+        setFilter = false;
+    end
+
     local merchantFilters = GetMerchantFilter();
-    SetMerchantFilter(LE_LOOT_FILTER_ALL);
-    MerchantFrame_Update();
+    if setFilter then
+        SetMerchantFilter(LE_LOOT_FILTER_ALL);
+        MerchantFrame_Update();
+    end
 
     local merchantItemList = {};
     local currencies = { GetMerchantCurrencies() };
@@ -1547,8 +1554,10 @@ function wlEvent_MERCHANT_UPDATE(self)
         wlUpdateVariable(wlUnit, unitId, "merchant", link, "max", numAvailable);
     end
 
-    SetMerchantFilter(merchantFilters);
-    MerchantFrame_Update();
+    if setFilter then
+        SetMerchantFilter(merchantFilters);
+        MerchantFrame_Update();
+    end
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -3121,7 +3130,7 @@ function wlBagItemOnUse(link, bag, slot)
     local id = wlParseItemLink(link);
     if bag and slot then
         local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
-        if itemInfo.hasLoot then
+        if itemInfo and itemInfo.hasLoot then
             wlClearTracker("spell");
             wlTrackerClearedTime = now;
             wlTracker.spell.time = now;
@@ -3500,7 +3509,7 @@ function wlEvent_ITEM_LOCK_CHANGED(self, bag, slot)
     local itemID = wlParseItemLink(itemLink);
     local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
 
-    if itemInfo.isLocked and wlTracker.spell.id == itemID then
+    if itemInfo and itemInfo.isLocked and wlTracker.spell.id == itemID then
         wlLockedID = itemID;
     end
 
@@ -4361,7 +4370,15 @@ function wlScanAppearances()
     wlScanAppearancesProgress.colType = Enum.TransmogCollectionTypeMeta.MinValue;
     wlScanAppearancesProgress.appearanceTable = {}
     wlScanAppearancesProgress.interval = 200;
-    wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
+
+    if (IsAddOnLoaded('BetterWardrobe')) then
+        wlScanAppearancesProgress.colTypeStep =
+            Enum.TransmogCollectionTypeMeta.MaxValue - Enum.TransmogCollectionTypeMeta.MinValue + 1
+        wlScanAppearancesStep();
+    else
+        wlScanAppearancesProgress.colTypeStep = 1;
+        wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
+    end
 
     return true;
 end
@@ -4373,21 +4390,28 @@ function wlScanAppearancesStep()
     end
 
     local colType = wlScanAppearancesProgress.colType;
+    local colTypeStep = wlScanAppearancesProgress.colTypeStep;
 
     -- enable filter if wardrobe frame is invisible.
     local enableFilter = not WardrobeCollectionFrame or not WardrobeCollectionFrame:IsVisible();
 
-    local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
-    if (app) then
-        for k, o in pairs(app) do
-            if o.isCollected and not o.isHideVisual then
-                tinsert(wlScanAppearancesProgress.appearanceTable, o.visualID .. ':' .. colType)
+    for i = 1, colTypeStep do
+        if (colType > Enum.TransmogCollectionTypeMeta.MaxValue) then
+            break;
+        end
+        local app = wlGetCollectedTransmogAppearances(colType, enableFilter)
+        if (app) then
+            for k, o in pairs(app) do
+                if o.isCollected and not o.isHideVisual then
+                    tinsert(wlScanAppearancesProgress.appearanceTable, o.visualID .. ':' .. colType)
+                end
             end
         end
+        colType = colType + 1;
     end
 
-    if colType < Enum.TransmogCollectionTypeMeta.MaxValue then
-        wlScanAppearancesProgress.colType = colType + 1;
+    if colType <= Enum.TransmogCollectionTypeMeta.MaxValue then
+        wlScanAppearancesProgress.colType = colType;
         wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
     else
         local ids = table.concat(wlScanAppearancesProgress.appearanceTable, ',');
