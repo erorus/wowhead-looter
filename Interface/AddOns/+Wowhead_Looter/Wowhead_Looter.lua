@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-12-06";
+local WL_ADDON_UPDATED = "2022-12-14";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -4703,11 +4703,17 @@ function wlCheckAreaPois()
         2025, -- Thaldraszus
         2112, -- Valdrakken
     };
+    -- Collect POIs for these maps regardless of whether they are primary POIs.
+    local includeNonPrimary = {
+        [1978] = true, -- Dragon Isles
+    };
 
     for _, uiMapId in ipairs(uiMapIds) do
         local pois = C_AreaPoiInfo.GetAreaPOIForMap(uiMapId);
         for _, poiId in ipairs(pois) do
-            if C_AreaPoiInfo.IsAreaPOITimed(poiId) then
+            local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(uiMapId, poiId);
+            if C_AreaPoiInfo.IsAreaPOITimed(poiId) and
+                    (includeNonPrimary[uiMapId] or (poiInfo and poiInfo.isPrimaryMapForPOI)) then
                 local secondsLeft = C_AreaPoiInfo.GetAreaPOISecondsLeft(poiId);
                 if secondsLeft then
                     local curTime = GetServerTime();
