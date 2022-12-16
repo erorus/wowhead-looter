@@ -4712,8 +4712,9 @@ function wlCheckAreaPois()
         local pois = C_AreaPoiInfo.GetAreaPOIForMap(uiMapId);
         for _, poiId in ipairs(pois) do
             local poiInfo = C_AreaPoiInfo.GetAreaPOIInfo(uiMapId, poiId);
-            if C_AreaPoiInfo.IsAreaPOITimed(poiId) and
-                    (includeNonPrimary[uiMapId] or (poiInfo and poiInfo.isPrimaryMapForPOI)) then
+            if C_AreaPoiInfo.IsAreaPOITimed(poiId) and (
+                includeNonPrimary[uiMapId] or (poiInfo and poiInfo.isPrimaryMapForPOI)
+            ) then
                 local secondsLeft = C_AreaPoiInfo.GetAreaPOISecondsLeft(poiId);
                 if secondsLeft then
                     local curTime = GetServerTime();
