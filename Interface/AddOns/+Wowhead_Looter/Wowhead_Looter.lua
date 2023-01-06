@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2022-12-14";
+local WL_ADDON_UPDATED = "2023-01-05";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -4394,12 +4394,11 @@ function wlScanAppearances()
     wlScanAppearancesProgress.appearanceTable = {}
     wlScanAppearancesProgress.interval = 200;
 
+    local colTypeStep = Enum.TransmogCollectionTypeMeta.MaxValue - Enum.TransmogCollectionTypeMeta.MinValue + 1;
     if (IsAddOnLoaded('BetterWardrobe')) then
-        wlScanAppearancesProgress.colTypeStep =
-            Enum.TransmogCollectionTypeMeta.MaxValue - Enum.TransmogCollectionTypeMeta.MinValue + 1
         wlScanAppearancesStep();
     else
-        wlScanAppearancesProgress.colTypeStep = 1;
+        wlScanAppearancesProgress.colTypeStep = colTypeStep / 3;
         wlTimers.scanAppearances = wlGetTime() + wlScanAppearancesProgress.interval;
     end
 
