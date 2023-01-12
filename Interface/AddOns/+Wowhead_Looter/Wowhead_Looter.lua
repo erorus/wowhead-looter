@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-06";
+local WL_ADDON_UPDATED = "2023-01-11";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -368,6 +368,10 @@ local WL_LOOT_TOAST_NOSPELL =
 
     -- 10.0
     [198172] = true,
+    [199472] = true,
+    [199473] = true,
+    [199474] = true,
+    [199475] = true,
     [200069] = true,
     [200070] = true,
     [200072] = true,
