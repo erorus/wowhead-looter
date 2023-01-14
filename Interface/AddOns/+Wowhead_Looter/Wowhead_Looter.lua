@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-11";
+local WL_ADDON_UPDATED = "2023-01-12";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100002;
@@ -1461,6 +1461,7 @@ function wlEvent_MERCHANT_UPDATE(self)
     end
 
     local merchantItemList = {};
+    local merchantItemReqList = {};
     local currencies = { GetMerchantCurrencies() };
     local numCurrencies = #currencies;
     local currencyInfos = {};
@@ -1473,7 +1474,7 @@ function wlEvent_MERCHANT_UPDATE(self)
     end
 
     for slot=1, GetMerchantNumItems() do
-        local name, icon, price, stack, numAvailable, _, _, extendedCost = GetMerchantItemInfo(slot);
+        local name, icon, price, stack, numAvailable, isPurchasable, _, extendedCost = GetMerchantItemInfo(slot);
         local itemId, subId, _, _, _, _, _, _, _, _, _, numBonus, bonuses = wlParseItemLink(GetMerchantItemLink(slot));
         if (itemId ~= 0 or ((currencyInfos[name] ~= nil) and (currencyInfos[name][2] == icon))) then
 
@@ -1488,7 +1489,9 @@ function wlEvent_MERCHANT_UPDATE(self)
 
             price = wlGetFullCost(price, standing);
 
-            if extendedCost then
+            local checkReq = not isPurchasable and GetLocale() == 'enUS';
+
+            if extendedCost or checkReq then
                 local personalRating, battlegroundRating = 0, 0;
 
                 wlGameTooltip:ClearLines();
@@ -1532,6 +1535,19 @@ function wlEvent_MERCHANT_UPDATE(self)
                             personalRating = pts1 + 1000000; -- 3v3 or 5v5 flag
                             battlegroundRating = pts2;
                             break;
+                        end
+                    end
+
+                    if checkReq then
+                        local tr, tg, tb, ta = line:GetTextColor();
+                        if (tr > tg and tg == tb) then
+                            local reqText = line:GetText();
+                            if reqText and reqText ~= '' then
+                                if not merchantItemReqList[itemId] then
+                                    merchantItemReqList[itemId] = {};
+                                end
+                                table.insert(merchantItemReqList[itemId], reqText);
+                            end
                         end
                     end
                 end
@@ -1579,6 +1595,10 @@ function wlEvent_MERCHANT_UPDATE(self)
 
     for link, numAvailable in pairs(merchantItemList) do
         wlUpdateVariable(wlUnit, unitId, "merchant", link, "max", numAvailable);
+    end
+
+    for itemId, reqTexts in pairs(merchantItemReqList) do
+        wlUpdateVariable(wlUnit, unitId, "merchantReq", itemId, "set", reqTexts);
     end
 
     if setFilter then
