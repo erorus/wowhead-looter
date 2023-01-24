@@ -10,10 +10,10 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-12";
+local WL_ADDON_UPDATED = "2023-01-24";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 100002;
+local WL_VERSION = 100005;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -1231,20 +1231,20 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_CHAT_MSG_MONSTER_SAY(self, text, name, language)
-    wlRegisterUnitQuote(name, "say", language, text);
+function wlEvent_CHAT_MSG_MONSTER_SAY(self, text, name, language, channel, name2)
+    wlRegisterUnitQuote(name, "say", language, text, name2);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_CHAT_MSG_MONSTER_WHISPER(self, text, name, language)
-    wlRegisterUnitQuote(name, "whisper", language, text);
+function wlEvent_CHAT_MSG_MONSTER_WHISPER(self, text, name, language, channel, name2)
+    wlRegisterUnitQuote(name, "whisper", language, text, name2);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
-function wlEvent_CHAT_MSG_MONSTER_YELL(self, text, name, language)
-    wlRegisterUnitQuote(name, "yell", language, text);
+function wlEvent_CHAT_MSG_MONSTER_YELL(self, text, name, language, channel, name2)
+    wlRegisterUnitQuote(name, "yell", language, text, name2);
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
@@ -1259,9 +1259,13 @@ function wlReplaceWord(word)
 end
 
 local wlLanguage = nil;
-function wlRegisterUnitQuote(name, how, language, text)
+function wlRegisterUnitQuote(name, how, language, text, name2)
     -- Init
     text = text:gsub("(%w+-?%w*)", wlReplaceWord);
+
+    if name2 and name2 ~= '' then
+        text = text:gsub(name2, "<name>");
+    end
 
     if not wlLanguage then
         wlLanguage = {};
