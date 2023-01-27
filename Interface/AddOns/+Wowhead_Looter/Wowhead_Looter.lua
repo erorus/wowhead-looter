@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-25";
+local WL_ADDON_UPDATED = "2023-01-27";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100005;
@@ -2868,6 +2868,7 @@ local wlSpells = {
     Logging = { GetSpellInfo(167895) or "", WL_OBJECT, nil },
     Scrapping = { GetSpellInfo(WL_SPELL_SCRAPPING) or "", WL_ITEM, 1 },
     Collecting = { GetSpellInfo(214766) or "", WL_OBJECT, 2 },
+    Digging = { GetSpellInfo(370349) or "", WL_OBJECT, 1 },
     -- BeastLore = { GetSpellInfo(1462) or "", WL_NPC, nil },
     -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 },
 };
