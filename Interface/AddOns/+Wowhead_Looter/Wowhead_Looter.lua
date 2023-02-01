@@ -3,14 +3,14 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 10.0.2                    --
+--    Patch: 10.0.5                    --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-27";
+local WL_ADDON_UPDATED = "2023-01-31";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100005;
@@ -4810,6 +4810,34 @@ end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
+-- Collect Trading Posts data
+function wlCheckTradingPost(npcId)
+    if not npcId then
+        return
+    end
+    local vendorItemIds = C_PerksProgram.GetAvailableVendorItemIDs();
+    if vendorItemIds then
+        for _,vendorItemId in ipairs(vendorItemIds) do
+            local info = C_PerksProgram.GetVendorItemInfo(vendorItemId);
+            if info then
+                local itemLink = wlConcat(info.itemID, 0, 1, 0, -1, '');
+                wlUpdateVariable(wlUnit, npcId, "merchant", itemLink, "max", -1);
+            end
+        end
+    end
+end
+
+-- Called on PERKS_PROGRAM_OPEN event.
+function wlEvent_PERKS_PROGRAM_OPEN()
+    local npcId = nil;
+    if UnitExists('target') and not UnitIsPlayer('target') then
+        npcId = wlUnitGUID('target');
+    end
+    if (npcId) then
+        wlCheckTradingPost(npcId);
+    end
+end
+
 
 --------------------------
 --------------------------
@@ -4852,6 +4880,7 @@ local wlEvents = {
     BOSS_KILL = wlEvent_BOSS_KILL,
     UPDATE_MOUSEOVER_UNIT = wlEvent_UPDATE_MOUSEOVER_UNIT,
     DYNAMIC_GOSSIP_POI_UPDATED = wlEvent_DYNAMIC_GOSSIP_POI_UPDATED,
+    PERKS_PROGRAM_OPEN = wlEvent_PERKS_PROGRAM_OPEN,
 
     -- drops
     LOOT_OPENED = wlEvent_LOOT_OPENED,
