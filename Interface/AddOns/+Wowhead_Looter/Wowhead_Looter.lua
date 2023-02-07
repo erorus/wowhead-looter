@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-01-31";
+local WL_ADDON_UPDATED = "2023-02-06";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100005;
@@ -737,6 +737,25 @@ local WL_DAILY_BUT_NOT_REALLY = {
     66873, -- The Azure Vault
     66874, -- Halls of Infusion
     66875, -- Algeth'ar Academy
+
+    -- Aylaag Camp:
+    65784, -- The Otter Side
+    65789, -- Where Rivers Sleep
+    65792, -- Teeth for a Tooth
+    65796, -- The Best Defense...
+    65798, -- An Opportunistic Approach
+    66698, -- Counting Argali
+    66711, -- Delicacy in the Dark
+    67034, -- Of Wind and Water
+    67039, -- An Amazing Journey
+    67605, -- Thundering Plains
+    70210, -- Tradition Not Forgotten
+    70279, -- Blood of Dragons
+    70299, -- Draconic Defensive
+    70352, -- Scaling Ever Higher
+    70701, -- Bakar Dream of Lost Argali
+    70990, -- If There's Wool There's a Way
+    71241, -- Duck, Duck, Trap
 }
 
 local WL_DAILY_VENDOR_ITEMS = { 141713, 141861, 141884, 141860, 141712, 141862, } -- Xur'ios
