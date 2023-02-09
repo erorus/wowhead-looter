@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-02-06";
+local WL_ADDON_UPDATED = "2023-02-09";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100005;
@@ -244,6 +244,7 @@ local WL_LOOT_TOAST_BAGS = {
 -- Openable loot with toast but no spell
 local WL_LOOT_TOAST_NOSPELL =
 {
+    [54537] = true,  -- Heart-Shaped Box since 10.0.5
     [170061] = true, -- Rustbolt Supplies
     [169939] = true, -- Ankoan Supplies
     [169940] = true, -- Unshackled Supplies
@@ -385,6 +386,7 @@ local WL_LOOT_TOAST_NOSPELL =
     [201250] = true,
     [201251] = true,
     [201252] = true,
+    [201439] = true,
     [201462] = true,
     [201728] = true,
     [201754] = true,
@@ -395,6 +397,15 @@ local WL_LOOT_TOAST_NOSPELL =
     [202371] = true,
     [203476] = true,
     [203681] = true,
+
+    -- 10.0.7
+    [204378] = true,
+    [204379] = true,
+    [204380] = true,
+    [204381] = true,
+    [204359] = true,
+    [204383] = true,
+    [204403] = true,
 };
 
 local WL_LOOT_COUNT_KILLED_NPCS =
