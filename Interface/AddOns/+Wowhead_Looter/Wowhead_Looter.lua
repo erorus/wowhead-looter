@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-02-09";
+local WL_ADDON_UPDATED = "2023-02-13";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100005;
@@ -25,6 +25,7 @@ wlAuction, wlEvent, wlItemSuffix, wlObject, wlProfile, wlUnit = {}, {}, {}, {}, 
 wlItemDurability, wlGarrisonMissions, wlItemBonuses, wlContributionQuests = {}, {}, {}, {};
 wlDailies, wlWorldQuests = "", "";
 wlRegionBuildings = {};
+wlTradingPostItems = "";
 
 -- SavedVariablesPerCharacter
 wlSetting = {};
@@ -4845,15 +4846,21 @@ function wlCheckTradingPost(npcId)
     if not npcId then
         return
     end
+    local items = {};
     local vendorItemIds = C_PerksProgram.GetAvailableVendorItemIDs();
     if vendorItemIds then
+        local curTime = GetServerTime();
         for _,vendorItemId in ipairs(vendorItemIds) do
             local info = C_PerksProgram.GetVendorItemInfo(vendorItemId);
-            if info then
+            if info and info.itemID > 0 then
                 local itemLink = wlConcat(info.itemID, 0, 1, 0, -1, '');
                 wlUpdateVariable(wlUnit, npcId, "merchant", itemLink, "max", -1);
+                local endTime = curTime + info.timeRemaining;
+                table.insert(items, info.itemID .. '.' .. curTime .. '.' .. endTime);
             end
         end
+
+        wlTradingPostItems = wlGetPlayerRealmId() .. '=' .. table.concat(items, ',')
     end
 end
 
