@@ -3,17 +3,17 @@
 --     W o w h e a d   L o o t e r     --
 --                                     --
 --                                     --
---    Patch: 10.0.5                    --
+--    Patch: 10.0.7                    --
 --    E-mail: feedback@wowhead.com     --
 --                                     --
 -----------------------------------------
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-02-13";
+local WL_ADDON_UPDATED = "2023-03-21";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
-local WL_VERSION = 100005;
+local WL_VERSION = 100007;
 local WL_VERSION_PATCH = 0;
 local WL_ADDONNAME, WL_ADDONTABLE = ...
 
@@ -400,13 +400,32 @@ local WL_LOOT_TOAST_NOSPELL =
     [203681] = true,
 
     -- 10.0.7
+    [203210] = true,
+    [203217] = true,
+    [203218] = true,
+    [203220] = true,
+    [203221] = true,
+    [203222] = true,
+    [203223] = true,
+    [203224] = true,
+    [203699] = true,
+    [203700] = true,
+    [203724] = true,
+    [203730] = true,
+    [203742] = true,
+    [203743] = true,
+    [203774] = true,
+    [203912] = true,
+    [203959] = true,
+    [204307] = true,
+    [204359] = true,
     [204378] = true,
     [204379] = true,
     [204380] = true,
     [204381] = true,
-    [204359] = true,
     [204383] = true,
     [204403] = true,
+    [204636] = true,
 };
 
 local WL_LOOT_COUNT_KILLED_NPCS =
