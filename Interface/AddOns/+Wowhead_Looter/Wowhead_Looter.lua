@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-04-06";
+local WL_ADDON_UPDATED = "2023-04-21";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100007;
@@ -1203,7 +1203,10 @@ function wlEvent_PLAYER_TARGET_CHANGED(self)
         wlSeenDaily('n'..id);
     end
 
-    wlUpdateVariable(wlUnit, id, "name", UnitName("target"), "set", GetLocale());
+    local unitName = UnitName("target");
+    if (unitName and unitName ~= UNKNOWN and unitName ~= UnitName("player")) then
+        wlUpdateVariable(wlUnit, id, "name", unitName, "set", GetLocale());
+    end
 end
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
