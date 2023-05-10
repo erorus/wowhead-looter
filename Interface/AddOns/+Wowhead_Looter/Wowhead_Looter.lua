@@ -10,7 +10,7 @@
 
 
 -- When this version of the addon was made.
-local WL_ADDON_UPDATED = "2023-05-08";
+local WL_ADDON_UPDATED = "2023-05-10";
 
 local WL_NAME = "|cffffff7fWowhead Looter|r";
 local WL_VERSION = 100100;
@@ -2945,7 +2945,7 @@ local WL_NPC, WL_OBJECT, WL_ITEM, WL_ZONE = 1, 2, 4, 64;
 
 --**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
 
---    ID = { spellName, sourceFlags, isLootSpell }
+--    ID = { spellName, sourceFlags, isLootSpell, noSentSpell }
 local wlSpells = {
     Disenchanting = { GetSpellInfo(13262) or "", WL_ITEM, 1 },
     Engineering = { GetSpellInfo(49383) or "", WL_NPC, 1 },
@@ -2963,7 +2963,7 @@ local wlSpells = {
     Scrapping = { GetSpellInfo(WL_SPELL_SCRAPPING) or "", WL_ITEM, 1 },
     Collecting = { GetSpellInfo(214766) or "", WL_OBJECT, 2 },
     Digging = { GetSpellInfo(370349) or "", WL_OBJECT, 1 },
-    InsidiousInsight = { GetSpellInfo(399342) or "", WL_OBJECT, 0 },
+    InsidiousInsight = { GetSpellInfo(399342) or "", WL_OBJECT, 0, true },
     -- BeastLore = { GetSpellInfo(1462) or "", WL_NPC, nil },
     -- PickLocking = { GetSpellInfo(1804) or "", WL_OBJECT, 1 },
 };
@@ -3146,6 +3146,13 @@ function wlEvent_UNIT_SPELLCAST_SUCCEEDED(self, unit, spellCast, spellId)
     end
     if wlAnvilSpells[spellId] then
         wlRegisterObject(WL_ANVIL_ID);
+    end
+
+    local spellName = wlFindSpell(GetSpellInfo(spellId));
+    if spellName and wlSpells[spellName][4] and
+        bit_band(wlSpells[spellName][2], WL_OBJECT) ~= 0 then
+        local objectName = GameTooltipTextLeft1 and GameTooltipTextLeft1:GetText();
+        wlRegisterObject(wlConcat("_", "_", objectName));
     end
 
     if wlTracker.spell.time and wlTracker.spell.event == "SENT" and wlTracker.spell.action == wlFindSpell(GetSpellInfo(spellId)) then
